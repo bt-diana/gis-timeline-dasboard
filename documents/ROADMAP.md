@@ -12,7 +12,7 @@ Order: the UI first, as presentational components driven by props. Then the API 
 |---|---|---|---|---|
 | 1 | Map library selection: MapLibre GL JS chosen (INT-4) and installed | BR-12, TR-06 | none | done |
 | 2 | Dashboard layout: stubs and app shell; left are manual check, verify, build, acceptance, review | TR-61 | 1 | done |
-| 3 | Layer panel UI: layer list and on/off toggles from props; loading, error and empty states left to task 8 | BR-03, AR-01 | 2 | in progress |
+| 3 | Layer panel UI: feature-local layer data and store-backed on/off toggles; loading, error and empty states left to task 8 | BR-03, AR-01 | 2 | in progress |
 | 4 | Timeline UI: time picker over a list of time points from props | BR-06 | 2 | todo |
 | 5 | Map UI: `MapView` adapter with a MapLibre instance created once, bundled GeoJSON background, fake adapter for tests | BR-01, TR-40, TR-41 | 2 | todo |
 | 6 | Chart UI: Recharts time-series chart from props, selected-time marker | BR-07, TR-50, TR-51, TR-53 | 2 | todo |
