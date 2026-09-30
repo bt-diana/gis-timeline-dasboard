@@ -16,7 +16,7 @@ Derived from `documents/GIS_Timeline_BRD.md` and from the assignment's architect
 | TR-04 | Charts built with Recharts. | BR-07 |
 | TR-05 | Mock API via MSW (per README plan), or an equivalent simulated async request layer. | BR-10 |
 | TR-06 | Map library chosen from the allowed set (BR-12); see §9. | BR-12 |
-| TR-07 | No new npm package is added without the user's approval (see `.claude/agents/gis-dev.md`). | — |
+| TR-07 | No new npm package is added without the user's approval (see `.claude/agents/implementer.md`). | — |
 
 ## 2. Data flow
 

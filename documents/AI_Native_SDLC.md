@@ -12,6 +12,8 @@ Design ──intent.md, spec.md, plan.md──▶ Build ──tests + code diff�
 
 **Every artifact is a stop.** The agent produces one artifact, presents it, and **waits for the user's explicit approval before starting the next stage or artifact.** Silence, "looks fine so far" about something else, or approval of an earlier artifact is not approval. If the user requests changes, revise and ask again.
 
+**One agent per stage** (`.claude/agents/`): `intent-writer` (artifacts 0–1), `spec-writer` (2), `plan-writer` (3), `implementer` (4–5, then the Deploy steps), `reviewer` (6). Each starts from the previous approved artifact, so a stage never inherits another stage's context or approval.
+
 | # | Artifact | Approved by user before… |
 |---|---|---|
 | 0 | Feature branch `feature/<slug>` | (no approval — just create it) |
