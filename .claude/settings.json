@@ -12,9 +12,40 @@
           },
           {
             "type": "command",
+            "command": "node .claude/hooks/commit-format-gate.js",
+            "if": "Bash(git commit*)",
+            "statusMessage": "Checking commit message format..."
+          },
+          {
+            "type": "command",
             "command": "node .claude/hooks/review-gate.js",
             "if": "Bash(git push*)",
             "statusMessage": "Checking review artifact (AI-native SDLC gate)..."
+          }
+        ]
+      },
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node .claude/hooks/approval-gate.js",
+            "statusMessage": "Checking artifact approval..."
+          },
+          {
+            "type": "command",
+            "command": "node .claude/hooks/no-comments-gate.js",
+            "statusMessage": "Checking for code comments..."
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node .claude/hooks/approval-record.js"
           }
         ]
       }
