@@ -31,6 +31,8 @@ Approval for artifacts 1–3 and 6 is recorded in the file itself: the agent wri
 
 Each Design → Build → Deploy cycle happens on its own feature branch, named `feature/<feature-slug>` where `<feature-slug>` matches the `documents/design/<feature>/` folder (e.g. `feature/timeline` for `documents/design/timeline/`). Create it before the Design stage; all artifacts land as commits on that branch until it's merged. `documents/reviews/<branch-slug>.md` is keyed by branch name, so the Deploy-stage gate only works if each feature has its own branch. The base branch is `main`.
 
+The first commit on a new feature branch marks the feature `in progress` in `documents/ROADMAP.md`; the intent commit follows it.
+
 ## Decisions at every stage
 
 Engineering decisions are part of the artifacts, not a separate log. **Every artifact carries a `## Decisions` section** (`intent.md`, `spec.md`, `plan.md`, and the review file), listing each non-obvious choice with: decision, options considered, why, trade-off accepted, and AI involvement (who proposed it; accepted / changed / rejected and why). IDs are `INT-n`, `SPEC-n`, `PLAN-n`, `REV-n`.
