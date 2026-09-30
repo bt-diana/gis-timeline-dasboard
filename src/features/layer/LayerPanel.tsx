@@ -1,14 +1,8 @@
 import './LayerPanel.css'
+import { ACTIVE_LAYER_FIXTURE_IDS, LAYER_FIXTURES } from './layerFixtures'
 import { LAYER_PANEL_CONFIG } from './layerPanelConfig'
-import type { LayerSummary } from './types'
 
-export interface LayerPanelProps {
-  layers: readonly LayerSummary[]
-  activeLayerIds: readonly string[]
-  onToggleLayer: (layerId: string) => void
-}
-
-export function LayerPanel({ layers, activeLayerIds, onToggleLayer }: LayerPanelProps) {
+export function LayerPanel() {
   return (
     <aside className="shell-layer layer-panel" aria-labelledby={LAYER_PANEL_CONFIG.headingId}>
       <h2 id={LAYER_PANEL_CONFIG.headingId} className="layer-panel__heading">
@@ -16,8 +10,8 @@ export function LayerPanel({ layers, activeLayerIds, onToggleLayer }: LayerPanel
       </h2>
 
       <ul className="layer-panel__list">
-        {layers.map((layer) => {
-          const isActive = activeLayerIds.includes(layer.id)
+        {LAYER_FIXTURES.map((layer) => {
+          const isActive = ACTIVE_LAYER_FIXTURE_IDS.includes(layer.id)
 
           return (
             <li key={layer.id} className="layer-panel__row">
@@ -26,9 +20,6 @@ export function LayerPanel({ layers, activeLayerIds, onToggleLayer }: LayerPanel
                 role="switch"
                 aria-checked={isActive}
                 className="layer-panel__switch"
-                onClick={() => {
-                  onToggleLayer(layer.id)
-                }}
               >
                 {layer.name}
               </button>

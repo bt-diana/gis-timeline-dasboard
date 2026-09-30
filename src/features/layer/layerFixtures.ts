@@ -1,4 +1,4 @@
-import type { LayerSummary } from '@features/layer/types'
+import type { LayerSummary } from './types'
 
 export const LAYER_FIXTURES: readonly LayerSummary[] = [
   { id: 'temperature', name: 'Temperature', kind: 'points', unit: '°C' },
@@ -6,4 +6,4 @@ export const LAYER_FIXTURES: readonly LayerSummary[] = [
   { id: 'insolation', name: 'Insolation', kind: 'heatmap', unit: 'W/m²' },
 ] as const
 
-export const ACTIVE_LAYER_FIXTURE_IDS = ['wind'] as const
+export const ACTIVE_LAYER_FIXTURE_IDS: readonly string[] = ['wind']
