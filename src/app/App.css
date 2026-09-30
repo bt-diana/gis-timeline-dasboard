@@ -1,0 +1,73 @@
+:root {
+  --layer-panel-width: 280px;
+  --chart-height: 240px;
+  --gap: 8px;
+  --surface: #f5f6f7;
+  --border: #c9ced4;
+  --text: #1f2933;
+  --muted: #5b6672;
+  font-family: system-ui, sans-serif;
+  color: var(--text);
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  overflow: hidden;
+  background: #ffffff;
+}
+
+.shell {
+  display: grid;
+  grid-template-columns: var(--layer-panel-width) minmax(0, 1fr);
+  grid-template-rows: auto minmax(0, 1fr);
+  grid-template-areas:
+    'header header'
+    'layer workspace';
+  gap: var(--gap);
+  height: 100vh;
+  padding: var(--gap);
+  box-sizing: border-box;
+}
+
+.shell-header {
+  grid-area: header;
+}
+
+.shell-title {
+  margin: 0;
+  font-size: 1.25rem;
+}
+
+.shell-layer {
+  grid-area: layer;
+}
+
+.workspace {
+  grid-area: workspace;
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) var(--chart-height);
+  gap: var(--gap);
+  min-height: 0;
+}
+
+.placeholder {
+  display: grid;
+  place-items: center;
+  min-height: 0;
+  border: 1px dashed var(--border);
+  border-radius: 4px;
+  background: var(--surface);
+}
+
+.placeholder-label {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--muted);
+}
