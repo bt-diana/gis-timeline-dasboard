@@ -1,4 +1,4 @@
-import type { LayerSummary } from './types'
+import type { LayerSummary } from '@entities/layer/model'
 
 export const LAYER_FIXTURES: readonly LayerSummary[] = [
   { id: 'temperature', name: 'Temperature', kind: 'points', unit: '°C' },
