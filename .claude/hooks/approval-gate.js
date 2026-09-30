@@ -1,8 +1,8 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const { designFolder, sliceOf } = require('./design-folders');
+const { statuses, snapshotPath, consumeApprovalToken: consumeToken } = require('./approval-state');
 
-const TOKEN_TTL_MS = 30 * 60 * 1000;
 const SETS_APPROVED = /^status:\s*approved\s*$/m;
 const DESIGN_FILE = /(^|\/)documents\/design\/([^/]+)\/(intent|spec|plan)\.md$/;
 const REVIEW_FILE = /(^|\/)documents\/reviews\/(?!TEMPLATE)[^/]+\.md$/;
@@ -19,7 +19,6 @@ try {
 const toolInput = input.tool_input || {};
 const root = input.cwd || process.cwd();
 const filePath = (toolInput.file_path || '').replace(/\\/g, '/');
-const tokenPath = path.join(root, '.claude', 'approval-token.json');
 
 function deny(reason) {
   process.stdout.write(JSON.stringify({
@@ -44,24 +43,18 @@ function isApproved(feature, artifact) {
   return SETS_APPROVED.test(readIfExists(path.join(root, 'documents', 'design', feature, `${artifact}.md`)));
 }
 
-function consumeApprovalToken() {
-  try {
-    const { at } = JSON.parse(fs.readFileSync(tokenPath, 'utf8'));
-    fs.rmSync(tokenPath, { force: true });
-    return Date.now() - at < TOKEN_TTL_MS;
-  } catch {
-    return false;
-  }
-}
+const consumeApprovalToken = () => consumeToken(root);
 
-const command = toolInput.command || '';
-const ARTIFACT_PATH = /documents\/(design\/[^/\s'"]+\/(intent|spec|plan)|reviews\/(?!TEMPLATE)[^/\s'"]+)\.md/;
-const WRITES_FILES = /\bsed\b[^|;&]*\s-i|\bperl\b[^|;&]*\s-i|>|\btee\b|\bpython3?\b|\bnode\b|\bruby\b|\bawk\b[^|;&]*-i|\b(cp|mv|install|dd)\s|\bgit\s+(checkout|restore|apply|stash)\b|\bpatch\b/;
-
-if (command && ARTIFACT_PATH.test(command) && WRITES_FILES.test(command) && /approved/.test(command)) {
-  if (!consumeApprovalToken()) {
-    deny('Approval gate: this shell command writes a design or review artifact and mentions "approved". Status can only become "approved" right after the user says so in chat. Present the artifact, stop, and wait.');
+if (input.tool_name === 'Bash') {
+  const snapshotFile = snapshotPath(root, input.tool_use_id);
+  const snapshotDir = path.dirname(snapshotFile);
+  fs.mkdirSync(snapshotDir, { recursive: true });
+  for (const name of fs.readdirSync(snapshotDir)) {
+    const stale = path.join(snapshotDir, name);
+    if (Date.now() - fs.statSync(stale).mtimeMs > 60 * 60 * 1000) fs.rmSync(stale, { force: true });
   }
+  fs.writeFileSync(snapshotFile, JSON.stringify(statuses(root)));
+  process.exit(0);
 }
 
 const designMatch = filePath.match(DESIGN_FILE);
