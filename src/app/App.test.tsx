@@ -22,10 +22,19 @@ describe('App shell', () => {
     expect(within(header).getByRole('heading', { name: 'GIS Timeline Dashboard' })).toBeInTheDocument()
   })
 
-  it('shows the layer, map and chart landmarks with their placeholder labels', () => {
-    const { layer, map, chart } = renderLandmarks()
+  it('shows the Layers landmark with a switch per fixture layer', () => {
+    const { layer } = renderLandmarks()
 
-    expect(within(layer).getByText('Layers')).toBeVisible()
+    expect(within(layer).getAllByRole('switch').map((toggle) => toggle.textContent)).toEqual([
+      'Temperature',
+      'Wind',
+      'Insolation',
+    ])
+  })
+
+  it('shows the map and chart landmarks with their placeholder labels', () => {
+    const { map, chart } = renderLandmarks()
+
     expect(within(map).getByText('Map')).toBeVisible()
     expect(within(chart).getByText('Chart')).toBeVisible()
   })
