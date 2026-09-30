@@ -1,12 +1,10 @@
 const fs = require('node:fs');
 const path = require('node:path');
-const { designFolder, sliceOf } = require('./design-folders');
 const { statuses, snapshotPath, consumeApprovalToken: consumeToken } = require('./approval-state');
 
 const SETS_APPROVED = /^status:\s*approved\s*$/m;
 const DESIGN_FILE = /(^|\/)documents\/design\/([^/]+)\/(intent|spec|plan)\.md$/;
 const REVIEW_FILE = /(^|\/)documents\/reviews\/(?!TEMPLATE)[^/]+\.md$/;
-const TEST_FILE = /\.test\.(ts|tsx)$/;
 const PREREQUISITE = { spec: 'intent', plan: 'spec' };
 
 let input;
@@ -59,7 +57,6 @@ if (input.tool_name === 'Bash') {
 
 const designMatch = filePath.match(DESIGN_FILE);
 const isReview = REVIEW_FILE.test(filePath);
-const testSlice = TEST_FILE.test(filePath) ? sliceOf(filePath) : null;
 
 if (designMatch) {
   const [, , feature, artifact] = designMatch;
@@ -67,10 +64,6 @@ if (designMatch) {
   if (prerequisite && !isApproved(feature, prerequisite)) {
     deny(`Approval gate: ${prerequisite}.md for "${feature}" is not approved, so ${artifact}.md can't be drafted yet. Present ${prerequisite}.md and wait for the user's approval.`);
   }
-}
-
-if (testSlice && !isApproved(designFolder(testSlice), 'plan')) {
-  deny(`Approval gate: plan.md for "${designFolder(testSlice)}" is not approved, so no tests can be written yet.`);
 }
 
 if (designMatch || isReview) {

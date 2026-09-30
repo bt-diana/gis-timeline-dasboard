@@ -106,3 +106,12 @@ The layer region is a stub. Users cannot see which layers exist, switch them on 
 - **Why:** The user wants work, drafts included, committed as it goes; the approval status in each file and the review before push are enough.
 - **Trade-off accepted:** A commit can contain a draft artifact; the history shows drafts as well as approved versions.
 - **AI involvement:** Decided by the user.
+
+### INT-9 — No design-folder map; tests are not gated on the plan
+
+- **Status:** active
+- **Decision:** `.claude/hooks/design-folders.js` is removed, and with it the approval gate's check that blocked tests in a slice whose `plan.md` was not approved. Supersedes plan PLAN-8.
+- **Options considered:** Keep the map for the test check; remove both.
+- **Why:** After INT-8 the map served only the test check, and the user wants the gates reduced to artifact approval and the review before push.
+- **Trade-off accepted:** Tests can be written before the plan is approved; the order is kept by the process, not by a hook.
+- **AI involvement:** Decided by the user; Claude pointed out that the test check goes with the map.
