@@ -1,6 +1,6 @@
 ---
-status: approved
-revision: 2
+status: draft
+revision: 3
 ---
 
 # Plan — Layer Panel
@@ -40,20 +40,23 @@ src/
 | `src/entities/layer/model/toggleLayerIds.ts` | moved from `src/shared/store/layers/layerSlice.ts`: the pure toggle on an id list |
 | `src/entities/layer/model/selectors.ts` | new: `useLayers()`, `useActiveLayerIds()` over the app store |
 | `src/entities/layer/index.ts` | new: public API |
-| `src/features/toggle-layer/model/useToggleLayer.ts` | new: returns `(id) => void` dispatching `toggleLayerIds` |
+| `src/features/toggle-layer/model/useToggleLayer.ts` | new: returns `(id) => void` dispatching the slice's `toggleLayer` |
 | `src/features/toggle-layer/index.ts` | new |
-| `src/widgets/layer-panel/ui/LayerPanel.tsx` | moved from `src/features/layer/`: back to props only (spec 2), no `onKeyDown` |
+| `src/widgets/layer-panel/ui/LayerPanel.tsx` | moved from `src/features/layer/`: back to props only (spec 2), no `onKeyDown`, no shell grid class |
 | `src/widgets/layer-panel/ui/ConnectedLayerPanel.tsx` | new: selectors + `useToggleLayer` into `LayerPanel` (spec 5) |
 | `src/widgets/layer-panel/ui/LayerPanel.css`, `config.ts`, `index.ts` | moved / new |
 | `src/widgets/{header,map,chart}/` | moved from `src/features/`, with `index.ts` |
 | `src/shared/store/appStore.ts` | modified: state composed from entity slices; `src/shared/store/layers/` deleted |
-| `src/app/App.tsx` | modified: renders `ConnectedLayerPanel` and the widgets from `@widgets/*` |
+| `src/app/App.tsx` | modified: renders `ConnectedLayerPanel` inside its `shell-layer` grid cell, and the widgets from `@widgets/*` |
 | `src/features/layer/`, `src/features/{header,map,chart}/`, `src/entities/layer/model.ts` | deleted (moved) |
 | `tsconfig.app.json`, `vite.config.ts` | modified: drop the unused `@pages` alias |
 | `eslint.config.js` | modified: FSD import rules replace the feature-boundary rules (dashboard-layout PLAN-1), with the `appStore.ts` exception |
 | `.claude/hooks/design-gate.js` | modified: matches `src/{widgets,features,entities}/<slice>/` and `src/shared/store/`, not only `src/features/` |
-| `.claude/hooks/approval-gate.js` | modified: same pattern for test files |
-| `.claude/hooks/design-folders.js` | modified: slice → design folder (`layer`, `toggle-layer`, `layer-panel` → `layer-panel`; `header`, `map`, `chart` → `dashboard-layout`) |
+| `.claude/hooks/approval-gate.js` | modified: same pattern for test files; before each shell command, records every artifact's status (PLAN-9) |
+| `.claude/hooks/approval-state.js`, `.claude/hooks/approval-bash-check.js` | new: shared status helpers; after each shell command, puts back a status that became `approved` without the user's approval (PLAN-9) |
+| `.claude/settings.json`, `.gitignore` | modified: register the shell approval check; ignore its snapshots |
+| `.claude/hooks/design-folders.js` | modified: `sliceOf` gates the sliced layers and `src/shared/store/` only (PLAN-8); slice → design folder (`layer`, `toggle-layer`, `store` → `layer-panel`; `header`, `map`, `chart` → `dashboard-layout`) |
+| `documents/design/dashboard-layout/plan.md` | modified: PLAN-1 and PLAN-3 marked superseded by INT-4 |
 | `README.md` | modified: Architecture section (current layout, how it evolved and why) |
 | `documents/AI_Native_SDLC.md`, `.claude/agents/implementer.md`, `.claude/agents/plan-writer.md`, `documents/design/TEMPLATE/plan.md` | modified: `src/features/<feature>/` wording becomes FSD slices |
 
@@ -90,7 +93,7 @@ src/
 - [ ] `LayerPanel`: `aria-checked` unchanged after a click until props change.
 - [ ] `App`: clicking an inactive switch turns it on, clicking again turns it off, others unchanged (spec AC 3).
 - [ ] `App`: landmarks, order and placement tests still pass after the move.
-- [ ] By hand: gate blocks a slice commit without approved docs; ESLint rejects a sibling and an upward import; long name wraps.
+- [x] By hand: gate blocks a slice commit and a slice test without approved docs; the shell approval check puts back an unapproved `approved` and keeps the token through harmless commands; ESLint rejects sibling, upward, deep and relative cross-layer imports and allows `appStore.ts` → slice file; in the running app click and Space toggle, a long name wraps with no horizontal overflow, no page errors.
 - [ ] `npm run verify` passes, then the review.
 
 ## Decisions
@@ -126,3 +129,30 @@ src/
 - **Why:** The app has only one page, so a pages layer adds a folder with nothing to separate.
 - **Trade-off accepted:** If a second page appears, the grid moves out of `App` into `pages/`.
 - **AI involvement:** Claude recommended a pages layer; the user rejected it because there is only one page.
+
+### PLAN-8 — The design gate covers FSD slices and the store
+
+- **Status:** active
+- **Decision:** `design-gate.js` and `approval-gate.js` gate `src/{widgets,features,entities}/<slice>/` and `src/shared/store/`. `designFolderFor` maps `store`, `layer` and `toggle-layer` to `layer-panel`, and `header`, `map`, `chart` to `dashboard-layout`; any other slice needs a design folder of its own name. `src/app/` and the rest of `src/shared/` are not gated. Supersedes dashboard-layout PLAN-3.
+- **Options considered:** Gate only `src/features/` (the old gate); gate every `src/shared/<segment>/` under its own design folder; gate the sliced layers plus `src/shared/store/`.
+- **Why:** The old gate let the `src/shared/` and `src/entities/` commits through. Gating every shared segment would block a future `shared/api` until a design folder of that name exists.
+- **Trade-off accepted:** `store` points to `layer-panel` until another feature adds a slice to the store; that feature updates the map.
+- **AI involvement:** Proposed by Claude after the review; accepted by the user.
+
+### PLAN-9 — Shell edits of approvals are checked by their result
+
+- **Status:** active
+- **Decision:** Before each shell command, `approval-gate.js` records the status of every design and review artifact. After it, `approval-bash-check.js` compares them; a status that became `approved` without the user's approval in chat is put back and reported. The approval token is spent only by a real change to `approved`.
+- **Options considered:** Match the command text (the first version); compare the statuses before and after the command.
+- **Why:** The review showed the text match missed `sed --in-place`, `cd` then `sed`, `cp` and `git checkout`, and blocked harmless reads, while spending the token on them.
+- **Trade-off accepted:** Every shell command reads the frontmatter of all artifacts twice; the change is undone after the fact rather than prevented.
+- **AI involvement:** Proposed by Claude after the review; accepted by the user.
+
+### PLAN-10 — ESLint finds slices from the folders at load time
+
+- **Status:** active
+- **Decision:** `eslint.config.js` lists the slice folders of each layer when it loads, resolved from the config file's folder, and builds the boundary rules from them. `src/app/` and `src/shared/` also reject relative imports into other layers.
+- **Options considered:** A fixed list of slices in the config; folder discovery; a new ESLint plugin (needs approval under TR-07).
+- **Why:** A new slice is covered without editing the config, and no package is added.
+- **Trade-off accepted:** A new slice folder gets rules only when ESLint reloads its config (restart the editor's ESLint server).
+- **AI involvement:** Proposed by Claude; the folder resolution and relative-import rules added after the review; accepted by the user.
