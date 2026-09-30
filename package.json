@@ -1,0 +1,10 @@
+{
+  "name": "gis-timeline-dasboard",
+  "version": "1.0.0",
+  "description": "Interactive GIS map with time-based data layers, timeline sync, and analytics",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bt-diana/gis-timeline-dasboard.git"
+  },
+  "author": "Diana Butiakova (butiakova.diana@gmail.com)"
+}
