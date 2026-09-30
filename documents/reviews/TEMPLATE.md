@@ -25,4 +25,8 @@ Consolidated findings from the `reviewer` agent's fan-out (`.claude/agents/revie
 
 ## Resolution
 
-One row per finding above: fixed inline, deferred with rationale, or accepted as-is with rationale.
+One row per finding above: fixed inline, deferred with rationale, or accepted as-is with rationale. Add a final column, **AI involvement**: whether Claude proposed the resolution and whether the user accepted, changed or rejected it.
+
+## Decisions
+
+Any other non-obvious choice made during review, or "None." Same entry format as design docs, IDs `REV-1`, `REV-2`, … (Decision, Options considered, Why, Trade-off accepted, AI involvement).

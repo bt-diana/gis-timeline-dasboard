@@ -30,6 +30,8 @@ The four areas:
 3. **Test Coverage & Correctness** — compare the tests to `spec.md`'s acceptance criteria and `plan.md`'s test plan: is every criterion exercised? Are race conditions (rapid timeline switching, out-of-order responses) and loading/error/empty states tested? Do tests assert observable behavior rather than implementation details? Flag `spec.md` edge cases with no test.
 4. **Performance & Efficiency** — re-renders across map/chart on every timeline tick, redrawing layers that didn't change, oversized mock payloads, missing cancellation/ignoring of stale requests, missing memoization on expensive derived data. Pragmatic: flag only what would matter at this app's scale.
 
+Also give the Code Quality subagent this check: every non-obvious choice in the diff should appear in a `## Decisions` section of the feature's design docs, and the code must not contradict a recorded decision. Report missing or contradicted decisions as findings.
+
 ## Consolidation
 
 1. Read `documents/reviews/TEMPLATE.md` for the structure.

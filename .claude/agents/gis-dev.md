@@ -40,6 +40,10 @@ React, TypeScript (strict, no `any`), Vedro for state management, Recharts, MSW 
 - Layout code lives in `src/features/<feature>/`; shared code in `src/shared/`.
 - Extract magic values (layer ids, route paths, user-facing copy) into named `as const` config; leave one-off co-located literals inline.
 
+## Recording decisions
+
+Every artifact has a `## Decisions` section (see `documents/AI_Native_SDLC.md`). Record each non-obvious choice as you make it: decision, options considered, why, trade-off accepted, AI involvement (whether you proposed it, and whether the user accepted, changed or rejected it and why). Do this at every stage. Choices made during tests or implementation go into `plan.md`'s Decisions marked "(build)". Never wait until the end to reconstruct them.
+
 ## Feature workflow — one artifact, one approval
 
 This applies to new features and meaningful slices, not to small bug fixes or refactors. **After each numbered artifact below, present it and STOP. Do not begin the next step until the user explicitly approves it.** Approval of one artifact is not approval of the next. If asked for changes, revise and ask again.

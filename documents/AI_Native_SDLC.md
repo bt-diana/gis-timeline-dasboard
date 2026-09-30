@@ -29,6 +29,16 @@ Approval for artifacts 1–3 and 6 is recorded in the file itself: the agent wri
 
 Each Design → Build → Deploy cycle happens on its own feature branch, named `feature/<feature-slug>` where `<feature-slug>` matches the `documents/design/<feature>/` folder (e.g. `feature/timeline` for `documents/design/timeline/`). Create it before the Design stage; all artifacts land as commits on that branch until it's merged. `documents/reviews/<branch-slug>.md` is keyed by branch name, so the Deploy-stage gate only works if each feature has its own branch. The base branch is `main`.
 
+## Decisions at every stage
+
+Engineering decisions are part of the artifacts, not a separate log. **Every artifact carries a `## Decisions` section** (`intent.md`, `spec.md`, `plan.md`, and the review file), listing each non-obvious choice with: decision, options considered, why, trade-off accepted, and AI involvement (who proposed it; accepted / changed / rejected and why). IDs are `INT-n`, `SPEC-n`, `PLAN-n`, `REV-n`.
+
+- Decisions are approved together with the artifact that contains them.
+- Stages without their own file (tests, implementation, README) record their decisions in `plan.md`'s `## Decisions`, marked "(build)", and show them to the user.
+- When the user changes or rejects a proposal, the entry is written immediately with their reason.
+- A changed decision is edited in place with the previous choice noted in *Options considered*; git history keeps the rest.
+- The README's trade-offs, AI-usage and scaling sections are assembled from the approved Decisions entries.
+
 ## Design stage
 
 **Artifact:** `documents/design/<feature>/{intent.md, spec.md, plan.md}` — drafted **one file at a time, each approved before the next**.
@@ -76,7 +86,7 @@ status: draft
 
 After the reviewer writes it, the agent walks the user through findings and proposes a resolution for each (fixed / deferred / accepted, with rationale). Fixes are applied only as the user approves; then the user approves the review file (`status: approved`). Re-run the reviewer and update `commit:` whenever new commits land after the last review — the push gate checks this.
 
-Then refresh `README.md` (features checklist, architecture, scripts, stack) against what the feature actually shipped — or state explicitly that nothing changed. **Get approval**, commit on the feature branch, and only then push. When the user commands a push, the agent also opens the PR against `main` and writes its description (intent, key decisions, test coverage, review findings and resolutions, what to verify by hand). Commits are authored by Claude (author and committer set through `GIT_AUTHOR_*`/`GIT_COMMITTER_*` environment variables on the commit command), not by the user. Never push or open a PR unprompted. Merging the PR remains a human action.
+Then refresh `README.md` (features checklist, architecture, scripts, stack, and the trade-offs / AI-usage sections assembled from the approved Decisions entries) against what the feature actually shipped — or state explicitly that nothing changed. **Get approval**, commit on the feature branch, and only then push. When the user commands a push, the agent also opens the PR against `main` and writes its description (intent, key decisions, test coverage, review findings and resolutions, what to verify by hand). Commits are authored by Claude (author and committer set through `GIT_AUTHOR_*`/`GIT_COMMITTER_*` environment variables on the commit command), not by the user. Never push or open a PR unprompted. Merging the PR remains a human action.
 
 ## Incident stage
 
