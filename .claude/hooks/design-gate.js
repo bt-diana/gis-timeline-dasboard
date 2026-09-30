@@ -78,19 +78,12 @@ const files = Array.from(new Set([...staged, ...unstagedTracked]));
 const featureRe = /^src\/features\/([^/]+)\//;
 const isTestFile = (f) => /\.(test|spec)\.[jt]sx?$/.test(f) || /\/__tests__\//.test(f) || /\/tests\//.test(f);
 
-// Feature folders whose design lives in another design folder (PLAN-3 of
-// dashboard-layout). Remove an entry once that folder gets its own design docs.
-const designFolderFor = {
-  header: 'dashboard-layout',
-  layer: 'layer-panel',
-  map: 'dashboard-layout',
-  chart: 'dashboard-layout',
-};
+const { designFolder } = require('./design-folders');
 
 const features = new Set();
 for (const f of files) {
   const m = f.match(featureRe);
-  if (m && !isTestFile(f)) features.add(designFolderFor[m[1]] || m[1]);
+  if (m && !isTestFile(f)) features.add(designFolder(m[1]));
 }
 
 if (features.size === 0) allow();

@@ -1,5 +1,6 @@
 const fs = require('node:fs');
 const path = require('node:path');
+const { designFolder } = require('./design-folders');
 
 const TOKEN_TTL_MS = 30 * 60 * 1000;
 const SETS_APPROVED = /^status:\s*approved\s*$/m;
@@ -65,7 +66,7 @@ if (designMatch) {
   }
 }
 
-if (testMatch && !isApproved(testMatch[2], 'plan')) {
+if (testMatch && !isApproved(designFolder(testMatch[2]), 'plan')) {
   deny(`Approval gate: plan.md for "${testMatch[2]}" is not approved, so no tests can be written yet.`);
 }
 
