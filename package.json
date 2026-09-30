@@ -8,6 +8,7 @@
   },
   "author": "Diana Butiakova (butiakova.diana@gmail.com)",
   "dependencies": {
+    "maplibre-gl": "^6.11.2",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
     "recharts": "^3.10.1",
