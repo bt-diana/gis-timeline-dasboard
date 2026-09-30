@@ -42,7 +42,7 @@ React, TypeScript (strict, no `any`), Vedro for state management, Recharts, MSW 
 
 ## Recording decisions
 
-Every artifact has a `## Decisions` section (see `documents/AI_Native_SDLC.md`). Record each non-obvious choice as you make it: decision, options considered, why, trade-off accepted, AI involvement (whether you proposed it, and whether the user accepted, changed or rejected it and why). Do this at every stage. Choices made during tests or implementation go into `plan.md`'s Decisions marked "(build)". Never wait until the end to reconstruct them.
+Every artifact has a `## Decisions` section (see `documents/AI_Native_SDLC.md`). Record each non-obvious choice as you make it: decision, options considered, why, trade-off accepted, AI involvement (whether you proposed it, and whether the user accepted, changed or rejected it and why). Entries are append-only with a Status line: never edit or delete one; to change a decision, add a new entry and mark the old one `superseded by <new ID>` with the reason. Do this at every stage. Choices made during tests or implementation go into `plan.md`'s Decisions marked "(build)". Never wait until the end to reconstruct them.
 
 ## Feature workflow — one artifact, one approval
 

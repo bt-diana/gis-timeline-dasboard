@@ -35,9 +35,9 @@ Engineering decisions are part of the artifacts, not a separate log. **Every art
 
 - Decisions are approved together with the artifact that contains them.
 - Stages without their own file (tests, implementation, README) record their decisions in `plan.md`'s `## Decisions`, marked "(build)", and show them to the user.
-- When the user changes or rejects a proposal, the entry is written immediately with their reason.
-- A changed decision is edited in place with the previous choice noted in *Options considered*; git history keeps the rest.
-- The README's trade-offs, AI-usage and scaling sections are assembled from the approved Decisions entries.
+- Entries are **append-only**. Each has a `Status: active | superseded by <ID>`. A decision is never edited or deleted: to change it, add a new entry, mark the old one `superseded by <new ID>`, and give the reason in the new entry. The full decision history therefore stays in the artifacts.
+- When the user changes or rejects a proposal, the entry is written immediately with their reason (a rejected proposal is recorded as its own superseded entry).
+- The README's trade-offs, AI-usage and scaling sections are assembled from the approved Decisions entries, using active entries for the current design and superseded ones for the AI proposals that were changed or rejected.
 
 ## Design stage
 

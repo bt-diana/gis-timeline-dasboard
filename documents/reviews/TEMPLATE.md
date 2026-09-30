@@ -29,4 +29,4 @@ One row per finding above: fixed inline, deferred with rationale, or accepted as
 
 ## Decisions
 
-Any other non-obvious choice made during review, or "None." Same entry format as design docs, IDs `REV-1`, `REV-2`, … (Decision, Options considered, Why, Trade-off accepted, AI involvement).
+Any other non-obvious choice made during review, or "None." Same append-only entry format as design docs (including the Status line), IDs `REV-1`, `REV-2`, … (Decision, Options considered, Why, Trade-off accepted, AI involvement).
