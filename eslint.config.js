@@ -4,6 +4,7 @@ import reactHooks from 'eslint-plugin-react-hooks'
 import reactRefresh from 'eslint-plugin-react-refresh'
 import tseslint from 'typescript-eslint'
 import fs from 'node:fs'
+import path from 'node:path'
 
 const SLICED_LAYERS = ['widgets', 'features', 'entities']
 const LAYER_ORDER = ['app', ...SLICED_LAYERS, 'shared']
@@ -11,13 +12,15 @@ const MAX_SLICE_NESTING = 5
 const SOURCE_FILES = '*.{ts,tsx}'
 const STORE_FILE = 'src/shared/store/appStore.ts'
 
-const slicesOf = (layer) =>
-  fs.existsSync(`src/${layer}`)
+const slicesOf = (layer) => {
+  const layerDir = path.join(import.meta.dirname, 'src', layer)
+  return fs.existsSync(layerDir)
     ? fs
-        .readdirSync(`src/${layer}`, { withFileTypes: true })
+        .readdirSync(layerDir, { withFileTypes: true })
         .filter((entry) => entry.isDirectory())
         .map((entry) => entry.name)
     : []
+}
 
 const escapeRegex = (text) => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 
@@ -67,13 +70,22 @@ const sliceBoundaries = SLICED_LAYERS.flatMap((layer) =>
   ),
 )
 
-const appBoundaries = restrictImports(['src/app/**/*.{ts,tsx}'], [deepSliceImports])
+const relativeLayerImports = (layer) => ({
+  regex: `^(\\.\\./)+(${LAYER_ORDER.filter((other) => other !== layer).join('|')})(/|$)`,
+  message: `src/${layer}/ imports other layers through their alias, not a relative path (layer-panel INT-4).`,
+})
 
-const sharedBoundaries = restrictImports(['src/shared/**/*.{ts,tsx}'], higherLayerImports('shared'))
+const appBoundaries = restrictImports(['src/app/**/*.{ts,tsx}'], [deepSliceImports, relativeLayerImports('app')])
+
+const sharedBoundaries = restrictImports(
+  ['src/shared/**/*.{ts,tsx}'],
+  [...higherLayerImports('shared'), relativeLayerImports('shared')],
+)
 
 const storeException = restrictImports(
   [STORE_FILE],
   [
+    relativeLayerImports('shared'),
     {
       regex: `^@(?!entities/[^/]+/model/[^/]+Slice$)(${LAYER_ORDER.filter((layer) => layer !== 'shared').join('|')})(/|$)`,
       message: 'appStore.ts may import only entity slice files (layer-panel PLAN-5).',

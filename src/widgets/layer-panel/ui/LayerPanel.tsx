@@ -10,7 +10,7 @@ export interface LayerPanelProps {
 
 export function LayerPanel({ layers, activeLayerIds, onToggleLayer }: LayerPanelProps) {
   return (
-    <aside className="shell-layer layer-panel" aria-labelledby={LAYER_PANEL_CONFIG.headingId}>
+    <aside className="layer-panel" aria-labelledby={LAYER_PANEL_CONFIG.headingId}>
       <h2 id={LAYER_PANEL_CONFIG.headingId} className="layer-panel__heading">
         {LAYER_PANEL_CONFIG.heading}
       </h2>

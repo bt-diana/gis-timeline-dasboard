@@ -76,10 +76,12 @@ describe('LayerPanel', () => {
 
   it('keeps aria-checked until the props change', async () => {
     const user = userEvent.setup()
-    renderPanel()
+    const { rerender, onToggleLayer } = renderPanel()
 
     await user.click(screen.getByRole('switch', { name: 'Temperature' }))
-
     expect(checkedStates()).toEqual(['false', 'true', 'false'])
+
+    rerender(<LayerPanel layers={LAYERS} activeLayerIds={['wind', 'temperature']} onToggleLayer={onToggleLayer} />)
+    expect(checkedStates()).toEqual(['true', 'true', 'false'])
   })
 })

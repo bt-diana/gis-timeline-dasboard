@@ -10,7 +10,9 @@ export function App() {
     <AppStoreProvider state={initialAppStoreState}>
       <div className="shell">
         <Header />
-        <ConnectedLayerPanel />
+        <div className="shell-layer">
+          <ConnectedLayerPanel />
+        </div>
         <div className="workspace">
           <Map />
           <Chart />
