@@ -19,6 +19,8 @@ status: approved
 | `src/app/App.test.tsx` | modified: Layers landmark still present, now showing the fixture switches |
 | `src/app/App.css` | modified: `.shell-layer` loses the placeholder look |
 | `.claude/hooks/design-gate.js` | modified: `layer` maps to `layer-panel` instead of `dashboard-layout` |
+| `.claude/hooks/design-folders.js` | new: the feature-to-design-folder map shared by both gates |
+| `.claude/hooks/approval-gate.js` | modified: resolves the design folder through `design-folders.js` when checking `plan.md` before tests |
 
 ## Design
 
@@ -57,3 +59,4 @@ status: approved
 - PLAN-1: `activeLayerIds` is `readonly string[]`.
 - PLAN-2: `LayerSummary` lives in `src/features/layer/`.
 - PLAN-3: the `design-gate.js` mapping change is made in this feature, as its own commit.
+- PLAN-4: `approval-gate.js` gets the same mapping through a map shared with `design-gate.js`, as its own commit before the tests.
