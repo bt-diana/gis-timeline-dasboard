@@ -13,7 +13,7 @@ status: approved
    - `onToggleLayer(id)`.
 3. Rows, in the order of `layers`: name, unit, and a switch (`role="switch"`, `aria-checked` from `activeLayerIds`, accessible name = layer name). Activating it by click, Space or Enter calls `onToggleLayer(id)` once.
 4. User-facing copy (headings) lives in one `as const` config in the feature folder.
-5. `App` renders `LayerPanel` with fixed props so the page still renders; real wirrememing is task 8.
+5. `App` renders `LayerPanel` with fixed props so the page still renders; real wiring is task 8.
 
 ## Data / state model changes
 
