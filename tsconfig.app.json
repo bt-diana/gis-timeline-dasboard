@@ -24,12 +24,9 @@
     "erasableSyntaxOnly": true,
     "forceConsistentCasingInFileNames": true,
     "paths": {
-      "@app/*": ["./src/app/*"],
       "@features/*": ["./src/features/*"],
       "@shared/*": ["./src/shared/*"],
-      "@store/*": ["./src/shared/store/*"],
       "@widgets/*": ["./src/widgets/*"],
-      "@pages/*": ["./src/pages/*"],
       "@entities/*": ["./src/entities/*"]
     }
   },

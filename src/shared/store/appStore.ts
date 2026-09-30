@@ -1,5 +1,5 @@
 import { createVedro } from 'vedro'
-import { initialLayerState, type LayerState } from './layers/layerSlice'
+import { initialLayerState, type LayerState } from '@entities/layer/model/layerSlice'
 
 export interface AppStoreState {
   layer: LayerState

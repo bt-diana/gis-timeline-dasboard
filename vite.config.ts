@@ -8,12 +8,9 @@ export default defineConfig({
   plugins: [react()],
   resolve: {
     alias: {
-      '@app': src('./src/app'),
       '@features': src('./src/features'),
       '@shared': src('./src/shared'),
-      '@store': src('./src/shared/store'),
       '@widgets': src('./src/widgets'),
-      '@pages': src('./src/pages'),
       '@entities': src('./src/entities'),
     },
   },

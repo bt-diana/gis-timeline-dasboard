@@ -1,4 +1,5 @@
 import { render, screen, within } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { App } from './App'
 
 function renderLandmarks() {
@@ -30,6 +31,23 @@ describe('App shell', () => {
       'Wind',
       'Insolation',
     ])
+  })
+
+  it('toggles a layer on and off without changing the other switches', async () => {
+    const user = userEvent.setup()
+    const { layer } = renderLandmarks()
+    const checkedStates = () =>
+      within(layer)
+        .getAllByRole('switch')
+        .map((toggle) => toggle.getAttribute('aria-checked'))
+
+    expect(checkedStates()).toEqual(['false', 'true', 'false'])
+
+    await user.click(within(layer).getByRole('switch', { name: 'Temperature' }))
+    expect(checkedStates()).toEqual(['true', 'true', 'false'])
+
+    await user.click(within(layer).getByRole('switch', { name: 'Temperature' }))
+    expect(checkedStates()).toEqual(['false', 'true', 'false'])
   })
 
   it('shows the map and chart landmarks with their placeholder labels', () => {
