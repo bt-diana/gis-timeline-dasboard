@@ -82,7 +82,7 @@ const isTestFile = (f) => /\.(test|spec)\.[jt]sx?$/.test(f) || /\/__tests__\//.t
 // dashboard-layout). Remove an entry once that folder gets its own design docs.
 const designFolderFor = {
   header: 'dashboard-layout',
-  layer: 'dashboard-layout',
+  layer: 'layer-panel',
   map: 'dashboard-layout',
   chart: 'dashboard-layout',
 };
