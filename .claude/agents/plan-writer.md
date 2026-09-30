@@ -13,7 +13,7 @@ The feature's `intent.md` and `spec.md` (both must have `status: approved`; if n
 
 ## Steps
 
-1. Copy `documents/design/TEMPLATE/plan.md` and fill it in: files to create or change under `src/features/<feature>/` and `src/shared/`, types, test plan, build sequence. The test plan and the build sequence both end with `npm run verify`, then the review via the `reviewer` agent once the user accepts the implementation.
+1. Copy `documents/design/TEMPLATE/plan.md` and fill it in: files to create or change per FSD slice (`src/{widgets,features,entities}/<slice>/`, `src/shared/`, `src/app/`), types, test plan, build sequence. The test plan and the build sequence both end with `npm run verify`, then the review via the `reviewer` agent once the user accepts the implementation.
 2. Extract magic values (layer ids, routes, user-facing copy) into named `as const` config.
 3. Present it and stop. Once the user approves, `git add` the three design files so the commit hook lets feature code through. Do not write tests or code.
 

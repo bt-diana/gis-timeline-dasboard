@@ -98,14 +98,15 @@ Then refresh `README.md` (features checklist, architecture, scripts, stack, and 
 
 ## Governance (enforced, not just documented)
 
-Two Claude Code `PreToolUse` hooks (`.claude/settings.json`, scripts in `.claude/hooks/`):
+Claude Code `PreToolUse` hooks (`.claude/settings.json`, scripts in `.claude/hooks/`):
 
-- **`design-gate.js`** — blocks `git commit` when staged (or, for `commit -a`, unstaged-tracked) changes touch `src/features/<feature>/**` (excluding tests) unless that feature's `documents/design/<feature>/{intent,spec,plan}.md` are tracked by git **and** each has `status: approved`.
+- **`design-gate.js`** — blocks `git commit` when staged (or, for `commit -a`, unstaged-tracked) changes touch an FSD slice, `src/{widgets,features,entities}/<slice>/**` or `src/shared/<segment>/**` (excluding tests), unless the slice's design folder `documents/design/<folder>/{intent,spec,plan}.md` are tracked by git **and** each has `status: approved`.
 - **`review-gate.js`** — blocks `git push` unless `documents/reviews/<branch-slug>.md` exists, its `commit:` matches `HEAD`, and it has `status: approved`.
+- **`approval-gate.js`** — on Write, Edit and Bash: blocks setting `status: approved` in a design or review artifact unless the user's last message approved it (token written by `approval-record.js` on `UserPromptSubmit`), and blocks tests in a slice whose `plan.md` is not approved. On Bash it blocks any command that writes a design or review file (`sed -i`, redirection, `tee`, a script, `cp`/`mv`, `git checkout`/`restore`) and mentions `approved`; for other edits to those files, use Write or Edit.
 
-Both accept a deliberate bypass: prefix the command with `SDLC_SKIP_GATE=1`. It exists so a misfiring gate doesn't block real work, not as a routine escape; if you reach for it often, fix the gate.
+`design-gate.js` and `review-gate.js` accept a deliberate bypass: prefix the command with `SDLC_SKIP_GATE=1`. It exists so a misfiring gate doesn't block real work, not as a routine escape; if you reach for it often, fix the gate.
 
-Note: the design gate assumes production code lives under `src/features/<feature>/`. If the scaffolding ends up with a different layout, update the `featureRe` pattern in `design-gate.js`.
+Note: the design gate and the approval gate find the slice with `sliceOf` in `.claude/hooks/design-folders.js`; `designFolderFor` there maps a slice to a design folder of another name (e.g. `toggle-layer` → `layer-panel`). `src/app/` is not gated. If the layout changes, update `sliceOf`.
 
 ## Measuring whether it's working
 

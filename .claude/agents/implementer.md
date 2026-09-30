@@ -27,7 +27,7 @@ The feature's `intent.md`, `spec.md` and `plan.md` (all must have `status: appro
 
 - Single source of truth: selected time, active layers and loaded data live in the state layer; map, timeline and chart only derive from it.
 - Every async load handles loading / error / success, and stale responses are discarded or cancelled.
-- Feature code in `src/features/<feature>/`, shared code in `src/shared/`. TypeScript strict, no `any`.
+- Feature-Sliced Design (layer-panel INT-4): `app` → `widgets` → `features` → `entities` → `shared`; a slice imports only lower layers, through their `index.ts`. Entity state in `entities/<entity>/model/<entity>Slice.ts`, composed in `shared/store/appStore.ts` (PLAN-5). Add a new slice to `designFolderFor` in `.claude/hooks/design-folders.js` when its design folder has another name. TypeScript strict, no `any`.
 - Extract magic values (layer ids, route paths, user-facing copy) into named `as const` config.
 - If a hook blocks a commit or push, fix the missing artifact; bypass with `SDLC_SKIP_GATE=1` only if the user says so.
 

@@ -2,7 +2,8 @@
 // PreToolUse(Bash) gate for `git commit`.
 //
 // Design-stage governance for the AI-native SDLC: if a commit touches production
-// code under src/features/<feature>/, that feature must already have
+// code under an FSD slice (src/{widgets,features,entities}/<slice>/ or
+// src/shared/<segment>/), its design folder must already have
 // documents/design/<feature>/{intent,spec,plan}.md tracked by git (staged or
 // committed) AND each must carry `status: approved` in its frontmatter — the
 // human's sign-off on each artifact. See documents/AI_Native_SDLC.md.
@@ -75,15 +76,15 @@ const unstagedTracked = usesDashA
 
 const files = Array.from(new Set([...staged, ...unstagedTracked]));
 
-const featureRe = /^src\/features\/([^/]+)\//;
+
 const isTestFile = (f) => /\.(test|spec)\.[jt]sx?$/.test(f) || /\/__tests__\//.test(f) || /\/tests\//.test(f);
 
-const { designFolder } = require('./design-folders');
+const { designFolder, sliceOf } = require('./design-folders');
 
 const features = new Set();
 for (const f of files) {
-  const m = f.match(featureRe);
-  if (m && !isTestFile(f)) features.add(designFolder(m[1]));
+  const slice = sliceOf(f);
+  if (slice && !isTestFile(f)) features.add(designFolder(slice));
 }
 
 if (features.size === 0) allow();
@@ -120,7 +121,7 @@ for (const feature of features) {
 if (missing.length === 0 && unapproved.length === 0) allow();
 
 const parts = [
-  `Design-stage gate (AI-native SDLC): this commit touches src/features/{${Array.from(features).join(', ')}}.`
+  `Design-stage gate (AI-native SDLC): this commit touches code designed in documents/design/{${Array.from(features).join(', ')}}.`
 ];
 if (missing.length) {
   parts.push(`Design artifacts not yet staged/committed:\n${missing.map((m) => `  - ${m}`).join('\n')}`);

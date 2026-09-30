@@ -21,6 +21,11 @@
             "command": "node .claude/hooks/review-gate.js",
             "if": "Bash(git push*)",
             "statusMessage": "Checking review artifact (AI-native SDLC gate)..."
+          },
+          {
+            "type": "command",
+            "command": "node .claude/hooks/approval-gate.js",
+            "statusMessage": "Checking artifact approval..."
           }
         ]
       },

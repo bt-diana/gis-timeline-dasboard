@@ -1,12 +1,12 @@
 const fs = require('node:fs');
 const path = require('node:path');
-const { designFolder } = require('./design-folders');
+const { designFolder, sliceOf } = require('./design-folders');
 
 const TOKEN_TTL_MS = 30 * 60 * 1000;
 const SETS_APPROVED = /^status:\s*approved\s*$/m;
 const DESIGN_FILE = /(^|\/)documents\/design\/([^/]+)\/(intent|spec|plan)\.md$/;
 const REVIEW_FILE = /(^|\/)documents\/reviews\/(?!TEMPLATE)[^/]+\.md$/;
-const FEATURE_TEST = /(^|\/)src\/features\/([^/]+)\/.*\.test\.(ts|tsx)$/;
+const TEST_FILE = /\.test\.(ts|tsx)$/;
 const PREREQUISITE = { spec: 'intent', plan: 'spec' };
 
 let input;
@@ -54,9 +54,19 @@ function consumeApprovalToken() {
   }
 }
 
+const command = toolInput.command || '';
+const ARTIFACT_PATH = /documents\/(design\/[^/\s'"]+\/(intent|spec|plan)|reviews\/(?!TEMPLATE)[^/\s'"]+)\.md/;
+const WRITES_FILES = /\bsed\b[^|;&]*\s-i|\bperl\b[^|;&]*\s-i|>|\btee\b|\bpython3?\b|\bnode\b|\bruby\b|\bawk\b[^|;&]*-i|\b(cp|mv|install|dd)\s|\bgit\s+(checkout|restore|apply|stash)\b|\bpatch\b/;
+
+if (command && ARTIFACT_PATH.test(command) && WRITES_FILES.test(command) && /approved/.test(command)) {
+  if (!consumeApprovalToken()) {
+    deny('Approval gate: this shell command writes a design or review artifact and mentions "approved". Status can only become "approved" right after the user says so in chat. Present the artifact, stop, and wait.');
+  }
+}
+
 const designMatch = filePath.match(DESIGN_FILE);
 const isReview = REVIEW_FILE.test(filePath);
-const testMatch = filePath.match(FEATURE_TEST);
+const testSlice = TEST_FILE.test(filePath) ? sliceOf(filePath) : null;
 
 if (designMatch) {
   const [, , feature, artifact] = designMatch;
@@ -66,8 +76,8 @@ if (designMatch) {
   }
 }
 
-if (testMatch && !isApproved(designFolder(testMatch[2]), 'plan')) {
-  deny(`Approval gate: plan.md for "${testMatch[2]}" is not approved, so no tests can be written yet.`);
+if (testSlice && !isApproved(designFolder(testSlice), 'plan')) {
+  deny(`Approval gate: plan.md for "${designFolder(testSlice)}" is not approved, so no tests can be written yet.`);
 }
 
 if (designMatch || isReview) {

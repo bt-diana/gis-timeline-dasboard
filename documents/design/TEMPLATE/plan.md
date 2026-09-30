@@ -8,7 +8,7 @@ status: draft
 
 | File | Change |
 |---|---|
-| `src/features/<feature>/...` | new / modified |
+| `src/<layer>/<slice>/...` | new / modified |
 | `src/mocks/...` | new, if MSW handlers change |
 
 ## Build sequence
