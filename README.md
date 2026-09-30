@@ -1,6 +1,8 @@
 # GIS Timeline Dashboard
  
 Interactive GIS map with time-based data layers, timeline sync, and Recharts analytics.
+
+Demo: https://gis-timeline-dasboard.netlify.app/
  
 > 🚧 **Work in progress.** The project is just starting, and the current repo progress is reflected in the roadmap at [documents/ROADMAP.md](documents/ROADMAP.md). This README will continue to be updated as the work goes on.
  
