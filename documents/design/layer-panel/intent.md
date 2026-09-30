@@ -1,5 +1,5 @@
 ---
-status: draft
+status: approved
 revision: 3
 ---
 
@@ -80,15 +80,6 @@ The layer region is a stub. Users cannot see which layers exist, switch them on 
 - **Trade-off accepted:** This task also builds the API client core and the MSW setup that later tasks reuse, so it is larger.
 - **AI involvement:** Decided by the user.
 
-### INT-6 — Commits are gated only on unapproved artifacts
-
-- **Status:** superseded by INT-8
-- **Decision:** Anything may be committed except a design or review artifact without `status: approved`. Code commits no longer wait for the feature's intent, spec and plan to be approved. Supersedes plan PLAN-8's commit part.
-- **Options considered:** Gate code commits on the approved design (before); gate only unapproved artifacts.
-- **Why:** The user wants to commit finished work while a revised design waits for approval.
-- **Trade-off accepted:** Code can land before its design is approved; the approval of the artifacts themselves and the review before push are still enforced.
-- **AI involvement:** Decided by the user.
-
 ### INT-7 — The roadmap is split by widget, each fully implemented
 
 - **Status:** active
@@ -97,21 +88,3 @@ The layer region is a stub. Users cannot see which layers exist, switch them on 
 - **Why:** Each task then ends with a feature that works end to end.
 - **Trade-off accepted:** Tasks are larger, and the first one also builds the shared API and MSW setup.
 - **AI involvement:** Decided by the user; the task split proposed by Claude.
-
-### INT-8 — No commit gate
-
-- **Status:** active
-- **Decision:** `design-gate.js` is removed. Anything may be committed, draft design and review artifacts included. Approval is still recorded only after the user says so (`approval-gate.js`), and a push still needs an approved review (`review-gate.js`).
-- **Options considered:** Gate code commits on the approved design (before INT-6); gate only unapproved artifacts (INT-6); no commit gate.
-- **Why:** The user wants work, drafts included, committed as it goes; the approval status in each file and the review before push are enough.
-- **Trade-off accepted:** A commit can contain a draft artifact; the history shows drafts as well as approved versions.
-- **AI involvement:** Decided by the user.
-
-### INT-9 — No design-folder map; tests are not gated on the plan
-
-- **Status:** active
-- **Decision:** `.claude/hooks/design-folders.js` is removed, and with it the approval gate's check that blocked tests in a slice whose `plan.md` was not approved. Supersedes plan PLAN-8.
-- **Options considered:** Keep the map for the test check; remove both.
-- **Why:** After INT-8 the map served only the test check, and the user wants the gates reduced to artifact approval and the review before push.
-- **Trade-off accepted:** Tests can be written before the plan is approved; the order is kept by the process, not by a hook.
-- **AI involvement:** Decided by the user; Claude pointed out that the test check goes with the map.

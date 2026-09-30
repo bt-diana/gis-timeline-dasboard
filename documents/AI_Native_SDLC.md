@@ -103,7 +103,7 @@ Claude Code `PreToolUse` hooks (`.claude/settings.json`, scripts in `.claude/hoo
 - **`review-gate.js`** — blocks `git push` unless `documents/reviews/<branch-slug>.md` exists, its `commit:` matches `HEAD`, and it has `status: approved`.
 - **`approval-gate.js`** — on Write and Edit: blocks setting `status: approved` in a design or review artifact unless the user's last message approved it (token written by `approval-record.js` on `UserPromptSubmit`). On Bash it records every artifact's status before the command; the `PostToolUse` hook **`approval-bash-check.js`** compares them after it and puts back any status that became `approved` without the user's approval (layer-panel PLAN-9).
 
-There is no commit gate: anything may be committed, drafts included (layer-panel INT-8). `review-gate.js` accepts a deliberate bypass: prefix the command with `SDLC_SKIP_GATE=1`. It exists so a misfiring gate doesn't block real work, not as a routine escape; if you reach for it often, fix the gate.
+There is no commit gate: anything may be committed, drafts included. `review-gate.js` accepts a deliberate bypass: prefix the command with `SDLC_SKIP_GATE=1`. It exists so a misfiring gate doesn't block real work, not as a routine escape; if you reach for it often, fix the gate.
 
 
 ## Measuring whether it's working
