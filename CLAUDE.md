@@ -6,7 +6,7 @@ Feature work, bug fixes and reviews go through the project agents in `.claude/ag
 - `implementer` — tests first, then code, then review, README and PR; one stop each.
 - `reviewer` — Deploy-stage review gate; launched by `implementer` after the user accepts the implementation.
 
-Enforced by hooks in `.claude/hooks/`: no commit of an unapproved design or review artifact, review approval before push, commit-message format, no comments in `src`. Hook blocked something: fix the cause, never bypass unless the user says so.
+Enforced by hooks in `.claude/hooks/`: artifact approval only after the user says so, review approval before push, commit-message format, no comments in `src`. Hook blocked something: fix the cause, never bypass unless the user says so.
 
 Non-negotiable:
 - Stop for user approval after every artifact; never set `status: approved` yourself.

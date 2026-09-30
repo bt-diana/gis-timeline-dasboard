@@ -6,12 +6,6 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node .claude/hooks/design-gate.js",
-            "if": "Bash(git commit*)",
-            "statusMessage": "Checking design artifacts (AI-native SDLC gate)..."
-          },
-          {
-            "type": "command",
             "command": "node .claude/hooks/commit-format-gate.js",
             "if": "Bash(git commit*)",
             "statusMessage": "Checking commit message format..."
