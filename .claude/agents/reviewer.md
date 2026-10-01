@@ -34,7 +34,7 @@ Also give the Code Quality subagent this check: every non-obvious choice in the 
 ## Consolidation
 
 1. Read the `## Verification` section of `documents/design/TEMPLATE/plan.md` for the structure.
-2. Deduplicate overlapping findings (note both angles). Drop pure nitpicks; keep everything else.
+2. Deduplicate overlapping findings (note both angles). Keep it simple (KISS, YAGNI): keep only findings that matter at this app's scale, drop nitpicks, speculative hardening and theoretical edge cases. For each finding suggest the simplest fix, or "accept as is" when a fix would add more complexity than it removes.
 3. Write the `## Verification` section of `documents/design/<feature>/plan.md`, placed before `## Decisions`, replacing any earlier one (findings from an earlier round that are now fixed stay in the table with their resolution):
    - `- **Reviewed commit:** \`<full HEAD sha>\`` and `- **Status:** draft`. **Never set it to approved** — only the main agent does that, after the user explicitly approves.
    - `### Checks`: what you ran (`npm run verify`, `npm run build`, by-hand checks) with the result of each.

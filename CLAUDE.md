@@ -12,5 +12,6 @@ Non-negotiable:
 - Stop for user approval after every artifact; never set `status: approved` yourself.
 - Never push or open a PR unless the user commands it.
 - Commits: one-line subject, no body. Commits authored by Claude carry no Co-Authored-By trailer; commits under the user's identity end with it. Commit only when allowed.
+- Keep it simple (KISS, YAGNI): no over-engineering, no speculative hardening. Not every review finding gets fixed; fix what matters, accept the rest with a reason.
 - No code comments; rationale lives in design docs.
 - `npm run verify` before presenting an implementation.
