@@ -1,88 +1,81 @@
 ---
-commit: 41df7b770ade235ed9cb22a95141a70640e99000
+commit: d4250faa8caeb909010a2286e52bf85c44fabaf0
 status: draft
 ---
 
 # Review — feature/layer-panel
 
-Consolidated findings from the `reviewer` agent, one pass per lens. The subagent tool was not available in this run, so the reviewer ran the four lenses one after another instead of in parallel. Scope: `git diff origin/main...HEAD` at `41df7b7`, including `b3583ac` (gates) and `41df7b7` (FSD refactor). At the main agent's request, the hooks in `.claude/hooks/` and `eslint.config.js` were also reviewed as code. `npm run verify` passes on HEAD (typecheck, lint, 7 test files, 22 tests), confirmed by the reviewer.
+Consolidated findings from the `reviewer` agent, one pass per lens. The subagent tool was not available in this run, so the reviewer ran the four lenses one after another instead of in parallel. Scope: `git diff origin/main...HEAD` at `d4250fa`, focused on the commits since the approved spec `9ae9820` (mainly `aad6bfb`, plus `d4250fa` plan build notes), with the rest of the branch covered briefly. This review replaces the earlier draft at `41df7b7`; its findings were resolved by the revision-2/3 commits and are not repeated.
 
-The reviewer probed the ESLint rules with `eslint --stdin --stdin-filename <existing file>` and ran `approval-gate.js` against sample Bash commands from a scratchpad script. No repository file was changed apart from this review.
+Checked by the reviewer at `d4250fa`:
 
-## Previous findings (review at `f4c1ad6`)
-
-| # | Previous finding | Status at `41df7b7` |
-|---|---|---|
-| CQ-1 | Duplicate `onKeyDown` on a native button | Resolved: `LayerPanel.tsx:29-31` has only `onClick` |
-| CQ-2 | `LayerSummary`/`RenderingKind` defined twice | Resolved: single `src/entities/layer/model/types.ts` |
-| CQ-3 | Panel styling split between `App.css` and `LayerPanel.css`, double padding | Resolved: `App.css:47-50` keeps only `grid-area` and `min-height`. The widget still carries the app's `shell-layer` class (new CQ-6) |
-| CQ-4 | Unused `@app`/`@store`/`@pages` aliases | Resolved: aliases are `@features`, `@shared`, `@widgets`, `@entities`, all used |
-| CQ-5 | README described a layout that did not exist | Resolved: README Architecture matches the code |
-| TC-1 | Space/Enter untested | Resolved: `LayerPanel.test.tsx:57-75` |
-| TC-2 | No `toggleLayerIds` unit test | Resolved: `toggleLayerIds.test.ts` |
-| TC-3 | `App` toggle on/off, others unchanged, untested | Resolved: `App.test.tsx:36-51` |
-| TC-4 | Two overlapping default-state tests | Resolved |
-| TC-5 | Unknown active ids untested | Resolved: `LayerPanel.test.tsx:50-55` |
-| G-1 | `LayerPanel` read the store | Resolved: props only, plus `ConnectedLayerPanel` |
-| G-2 | Layer list not in the store | Resolved: `layerSlice.ts:5-13` |
-| G-3 | Inline dispatch | Resolved: `features/toggle-layer/model/useToggleLayer.ts` |
-| G-4 | Slice in `shared/store/layers/` | Resolved: `entities/layer/model/*`; `shared/store/layers/` deleted |
-| G-5 | Upward import from `shared/` | Resolved in the code. Lint still lets a relative upward import through (new CQ-4) |
-| G-6 | Duplicate types | Resolved |
-| G-7 | `onKeyDown` | Resolved |
-| G-8 | Components in `src/features/` | Resolved: `src/widgets/{layer-panel,header,map,chart}` with `index.ts` |
-| G-9 | Gates matched only `src/features/` | Resolved, with a divergence: all of `src/shared/<segment>/` is gated, not only `src/shared/store/` (new CQ-3) |
-| G-10 | ESLint used the old boundaries | Resolved for alias imports. Relative-path gaps remain (new CQ-4) |
-| G-11 | `@pages` alias | Resolved |
-| G-12 | No props-level tests | Resolved. The "until props change" half is not asserted (new TC-1) |
-| G-13 | Old `src/features/<feature>/` wording | Resolved in the SDLC doc, agents and plan template. The dashboard-layout decisions are still marked active (new CQ-7) |
+- `npm run verify` passes: typecheck, lint, 11 test files, 54 tests.
+- `npm run build` succeeds; `dist` holds only `index.html`, one JS and one CSS asset. `grep -ril` for `msw`, `mockServiceWorker`, `QaControl`, `qa-control`, `Fail API requests` and `qa:fail-api` in `dist` finds nothing. `dist` was deleted afterwards; the working tree is clean.
+- ESLint rejects `@shared/mocks/...` from a widget, `../mocks/...` from `src/shared/api/`, and `../../shared/mocks/...` from an entity (probed with `eslint --stdin`).
+- `useLoadLayers` races, traced against the Vedro 1.1.0 source (`useVedroSelector` subscribes in `useEffect`, compares with `JSON.stringify`): StrictMode double mount (first request aborted by cleanup, its late result dropped by the `signal.aborted` check, the second request writes), Retry while pending, superseded success, superseded failure, and unmount are all handled correctly. No correctness defect found.
 
 ## Security
 
-No findings. No HTML is rendered from data (no `dangerouslySetInnerHTML` or `innerHTML`), and there are no keys, env secrets or new runtime dependencies (`package.json` is not in the diff). Layer names and units are rendered as React text nodes. The hooks run only fixed `git` commands through `execSync`/`execFileSync`.
+No findings. Server `ApiError` messages and layer names are rendered as React text, never as HTML; no keys or secrets; `msw` is a devDependency and is absent from the production bundle; the failure switch only reads and writes one `sessionStorage` boolean.
 
 ## Code Quality & Maintainability
 
-- **major** `b3583ac` (whole commit): the "gates" commit also carries the source moves: 22 files, including the moves of `LayerPanel.tsx`, `config.ts`, `LayerPanel.css`, the three stubs and the types, and the deletion of `src/features/layer/LayerPanel.test.tsx`. On its own, the commit does not typecheck. `tsc -b` on a `git archive b3583ac` snapshot fails because `src/app/App.tsx:2-5` imports `@features/*`, `src/shared/store/appStore.ts:2` imports `./layers/layerSlice`, and `LayerPanel.tsx:2-3` imports `@shared/store/layers/*`. This contradicts PLAN-3, PLAN-4 and build step 1 (gate changes as their own commit). It also leaves a commit that does not build, and build step 2 (tests written and failing first) cannot be verified, because tests and code land together in `41df7b7`. Fix: with the user's consent, split the history so `b3583ac` holds only `.claude/` and the doc wording and the moves go into `41df7b7`. Otherwise, record a REV decision that accepts the history as it is.
-- **major** `.claude/hooks/approval-gate.js:222-229`: the Bash approval check tests the command text, not what the command does. Both kinds of error were reproduced by running the hook. It misses real flips: `sed --in-place ...` (the `\s-i` pattern does not match `--in-place`), `cd documents/design/x && sed -i 's/draft/approved/' plan.md` (no full artifact path in the text), and `cp /tmp/plan.md documents/design/x/plan.md`, `git checkout other -- <artifact>` or `git show other:<artifact> > <artifact>` from an already-approved copy (the word `approved` is not in the text). It blocks commands that write nothing: `grep -n "status: approved" documents/design/layer-panel/plan.md 2>/dev/null` is denied because a bare `>` counts as a write, and so is any `node`/`python` invocation, even read-only. A heredoc that mentions an artifact path, and `echo ... approved ... >> README.md`, are also denied; this reviewer's own scratchpad probe script was blocked. In addition, line 226 consumes the approval token on any match. If a harmless flagged command runs right after the user approves, it uses up the token, and the real Write is then denied. Fix: check the effect, not the text. For example, snapshot the frontmatter `status` of design and review files in PreToolUse(Bash) and compare it in a PostToolUse(Bash) hook, which reverts or reports a flip made without a token. At minimum, match `--in-place`, count `>` only when it redirects to an artifact path, and consume the token only when an artifact actually flips.
-- **minor** `.claude/hooks/design-folders.js:9,14-17`: `sliceOf` gates every `src/shared/<segment>/` under a design folder named after the segment. A later `src/shared/api/` (roadmap task 7), `shared/ui` or `shared/lib` would then need `documents/design/api/` etc. and would be blocked by `design-gate.js` and, for tests, `approval-gate.js:233,243`. `store: 'layer-panel'` sends every future store edit (for example the timeline adding a `time` slice to `appStore.ts`) to the layer-panel docs instead of the feature's own. The plan's file map says only `src/shared/store/`, and neither choice has a decision. `designFolderFor[slice]` on a plain object also resolves inherited keys: a slice named `constructor` maps to a function. Fix: gate only `src/shared/store/` as planned, or record the broader rule as a decision. Use `Object.hasOwn(designFolderFor, slice)`.
-- **minor** `eslint.config.js:54,70,72,74-82`: relative imports get past the layer rules outside the sliced layers. This passes lint: `import { toggleLayer } from '../../entities/layer'` in `src/shared/store/appStore.ts` (an upward import from `shared/`, which also bypasses the "only `*Slice` files" exception). So does `import ... from '../entities/layer/model/toggleLayerIds'` in `src/app/App.tsx` (a deep import that skips `index.ts`). Only slice files have the `../` depth rule. Fix: add a relative-path pattern to `sharedBoundaries` and `storeException` (for example `^(\.\./){2,}`, since shared files sit one segment deep) and to `appBoundaries` (`^\.\./(widgets|features|entities)/`).
-- **minor** `eslint.config.js:14-20`: `slicesOf` reads `src/<layer>` relative to `process.cwd()`. If ESLint runs from another directory (an editor integration, a parent folder), no slice rules are generated and nothing reports it. Fix: resolve the path from `import.meta.dirname`.
-- **minor** `src/widgets/layer-panel/ui/LayerPanel.tsx:13`: the props-only widget sets the app shell's grid class `shell-layer` (`src/app/App.css:47`). A widget now depends on app-layer CSS, which goes against the downward-only rule of INT-4, and the standalone component carries grid placement. Fix: let `App` place it, with a wrapper or a `className` prop from `App`.
-- **minor** Decisions check: `documents/design/dashboard-layout/plan.md:90-92` (PLAN-1, feature boundaries in ESLint) and `:108-110` (PLAN-3, gate map for the stub folders) still say `Status: active`. Layer-panel INT-4 supersedes both, and the code no longer follows them. The new Bash approval check (`approval-gate.js:222-229`), gating all of `src/shared/<segment>/` (CQ-3) and runtime slice discovery in ESLint have no decision entry. `plan.md` file map row `useToggleLayer.ts` says it dispatches `toggleLayerIds`, while the code (`useToggleLayer.ts:10`) and the plan's own "Store shape" section dispatch `toggleLayer`. Fix: mark the dashboard-layout PLAN-1 and PLAN-3 as superseded by layer-panel INT-4, record the gate and lint choices, and correct the file-map wording (with the user's approval, since the docs are approved).
+- **CQ-1 (minor)** `src/features/load-layers/model/useLoadLayers.ts:7` vs `src/features/toggle-layer/model/useToggleLayer.ts:6` — the two features get dispatch in two ways. `useLoadLayers` uses `useAppStore().dispatch`, because Vedro's `useDispatch` returns `dispatch.bind(store)`, a new function on every render, so an effect depending on it would reload on every render. `useToggleLayer` uses `useAppStoreDispatch`, so its `useCallback` changes on every render and does nothing (performance angle: `onToggleLayer` is never stable, so a future `memo` on the panel or rows would not help). The reason is not recorded anywhere. Fix: export one stable dispatch hook from `appStore.ts` (for example `useAppStore()` plus `store.dispatch`) and use it in both features. Record the Vedro `useDispatch` behaviour in the plan's Design notes, next to the `useSelector` note.
+- **CQ-2 (minor)** `src/widgets/layer-panel/ui/LayerPanel.tsx:49` — `idle` is rendered as loading. This is a non-obvious choice with no Decision entry; spec 16 lists only loading, error, empty and success. It also hides the recorded Vedro limitation: if a component ever calls `useLoadLayers()` before its selectors, the missed `loading` write still looks right, because `idle` already shows "Loading layers…". Fix: add a Decision (or a plan Design line) saying idle shows as loading and why.
+- **CQ-3 (minor)** `src/widgets/layer-panel/ui/ConnectedLayerPanel.tsx:7-11` — correctness depends on hook order: selectors must be called before `useLoadLayers()` (plan Design note). Only a convention enforces this, and no test fails if the order flips (see CQ-2 and TC-2). Fix: add a test that would fail if `startLoading` is missed, for example a component that calls the selectors after `useLoadLayers()` and asserts `aria-busy`/status during loading with a non-idle initial state. Alternatively, make the selectors re-read `store.get()` after they subscribe, in a thin wrapper in `appStore.ts`.
+- **CQ-4 (minor)** `src/shared/mocks/failureSwitch.ts:21` and `src/app/App.tsx:10` — two non-obvious dev-mock choices are only in the plan's file map or not recorded at all: the failure switch persists in `sessionStorage`, so "default off" (SPEC-4) holds only for a fresh tab session; and `QaControl` is also excluded when `MODE === 'test'`. Fix: add a short PLAN Decision covering both.
+- **CQ-5 (minor)** `src/main.tsx:14` — if `worker.start()` rejects (no Service Worker support, an insecure origin, or a stale worker script), the app never renders and the rejection goes unhandled. Fix: render in a `.finally`, or catch and `console.error`, so dev still shows the panel's error state.
+- **CQ-6 (minor)** `src/shared/api/apiError.ts:9` and `src/entities/layer/model/guards.ts:5` — `isRecord` is defined twice. Later guards (series, snapshot) will add more copies. Fix: export `isRecord` from `@shared/api` (or a `shared/lib` guard module) and import it in `guards.ts`.
+
+Decisions check: all other non-obvious choices in the diff map to recorded decisions (INT-5, SPEC-3 to SPEC-6, PLAN-5, PLAN-10, PLAN-12, PLAN-13, plus the plan's Design notes on abort detection, latest-wins, StrictMode and Vedro `useSelector`). The code does not contradict any recorded decision.
 
 ## Test Coverage & Correctness
 
-- **minor** `src/widgets/layer-panel/ui/LayerPanel.test.tsx:77-84`: "keeps aria-checked until the props change" asserts only that the state is unchanged after a click. It never rerenders with new `activeLayerIds`, so the plan item's "until props change" half (the switch follows props) is not exercised at panel level. Fix: `rerender(<LayerPanel … activeLayerIds={['temperature', 'wind']} />)` and assert `['true', 'true', 'false']`.
-- **minor** Plan test plan, "By hand" item: nothing records that the gate blocked a slice commit, that ESLint rejected a sibling and an upward import, or that a long name wraps. The reviewer's probes confirm that alias-based sibling, upward and deep imports are rejected. The relative forms from `shared/` and `app/` are not (CQ-4), so the by-hand check did not cover them. Fix: record the manual checks (commands and results) in the PR description, and repeat them after CQ-4.
+Acceptance criteria against tests:
 
-Every spec acceptance criterion is tested: three switches with names and `aria-checked` (`LayerPanel.test.tsx:29-48`), click/Space/Enter once (`:57-75`), `App` on/off with the others unchanged (`App.test.tsx:36-51`), toggle adds and removes (`toggleLayerIds.test.ts`, `layerSlice.test.ts`), and the Layers landmark (`App.test.tsx:26-34`, `LayerPanel.test.tsx:23-27`). Spec edge cases: unknown ids, toggle twice and all off are covered. Long names wrap through CSS (`overflow-wrap: anywhere`, `min-width: 0`) and can only be checked by hand.
+| Criterion | Test |
+|---|---|
+| Request: validated body, `ApiError` message, fixed message, aborted | `src/shared/api/request.test.ts:21-69` |
+| Mocked load shows loading, then three switches with names, units, first active | `src/app/App.test.tsx:205-213` (names, first active), units only in `LayerPanel.test.tsx:331-344`, see TC-4 |
+| Failure shows message and Retry; Retry recovers | `App.test.tsx:230-240`, `useLoadLayers.test.tsx:66-90` |
+| By hand: dev MSW latency, QA control, production build without MSW or QA control | Plan test plan by hand (ticked); build part re-verified by this reviewer |
+| Empty list shows the empty state | `LayerPanel.test.tsx:324-329` (props), `layerSlice.test.ts:38-43` (slice), see TC-4 |
+| Retry while pending; slow first after fast second | `useLoadLayers.test.tsx:92-118`, superseded failure `:120-133` |
+| Unmount during a request writes nothing | `useLoadLayers.test.tsx:135-163` |
+| Timeline range sorted, de-duplicated, empty | `timelineRange.test.ts:5-15` |
+| Toggling and keyboard behaviour | `LayerPanel.test.tsx:352-387`, `App.test.tsx:215-228`, `toggleLayerIds.test.ts` |
+| `npm run verify` passes | Verified by the reviewer |
+
+- **TC-1 (minor)** `src/features/load-layers/model/useLoadLayers.test.tsx` — the spec edge case "React StrictMode mounts twice in dev" has no test. The logic is correct by trace (the first request is aborted by cleanup and its late response is dropped), but nothing guards it. `App.test.tsx` renders `<App />` without `StrictMode`, while `main.tsx` uses it. Fix: render the loader inside `<StrictMode>`, assert that `signals[0].aborted` is true and that `fetchLayers` was called twice, resolve the first response after the second, and assert that only the second result is in the store.
+- **TC-2 (minor)** `src/widgets/layer-panel/ui/ConnectedLayerPanel.tsx` — no test covers the hook-order constraint (see CQ-3). Every test that drives the loader calls the selectors first (`useLoadLayers.test.tsx:32-36`), and `idle` renders the same as `loading`. Fix: as in CQ-3.
+- **TC-3 (minor)** spec edge case "Long layer names: wrap, no horizontal overflow" (`LayerPanel.css:43`) has no test, and `d4250fa` dropped "long names wrap" from the plan's ticked by-hand checklist (`plan.md` test plan). Fix: restore it to the by-hand list and check it, or record that it is covered by the CSS only.
+- **TC-4 (minor)** `src/app/App.test.tsx:205-213` — the acceptance criterion says the mocked app shows "names, units and the first layer active", but the integrated test asserts names and `aria-checked` only. The empty-list criterion is tested only through props and the slice, not through the loader with `fetchLayers` resolving `[]`. Fix: assert the units in the App test, and add an App or loader case that resolves `[]` and expects "No layers available" with no switches.
+- **TC-5 (minor)** `src/features/load-layers/model/useLoadLayers.ts:23` — the fallback for a rejection that is not an `ApiRequestError` (it shows `API_MESSAGES.unexpected`) is untested. Fix: reject the deferred with `new Error('boom')` and expect the fixed message.
 
 ## Performance & Efficiency
 
-No findings at this app's scale. `ConnectedLayerPanel` selects `layer.layers` and `layer.activeLayerIds` separately, and Vedro re-renders only when the `JSON.stringify` of a selector's result changes, so a toggle does not re-render the header or the map and chart stubs. `useToggleLayer` is memoised on `dispatch`. For later tasks: `useVedroSelector` (`node_modules/vedro/lib/hooks/useStoreSelector.hook.js`) runs every subscribed selector twice and stringifies both results on each dispatch. That is fine for three layers, but snapshot and series data (tasks 9 and 10) should not be selected as large objects. Selectors must also not close over props, because the subscription keeps the first closure (`useEffect(..., [])`).
+- **PE-1 (minor, mostly future)** `src/entities/layer/model/selectors.ts:5-20` (Vedro `useVedroSelector`) — every selector hook is notified on every store dispatch and runs `JSON.stringify` on its previous and next value. `useLayers` (also used inside `useTimelineRange`) therefore serialises the whole layer list, with all time points, on every dispatch, including toggles today and timeline ticks once tasks 4 and 5 add time selection. This is negligible with three layers and five points. Fix: no change now. When the time-selection slice lands, measure it, and consider a reference-equality selector wrapper in `appStore.ts`. Record this next to the `useSelector` note in the plan.
+- See also CQ-1: `onToggleLayer` is not stable across renders.
+
+No other findings: there are no redundant requests (abort plus the signal check), `useTimelineRange` is memoised on the `layers` reference, mock payloads are tiny, and the panel re-renders only on its three selectors.
 
 ## Resolution
 
-| Finding | Severity | Resolution | AI involvement |
-|---|---|---|---|
-| CQ-1 `b3583ac` mixes gate changes with source moves and does not typecheck on its own (PLAN-3/PLAN-4) | major | TODO | TODO |
-| CQ-2 Bash approval check: text-based false negatives (`--in-place`, relative path, `cp`/`git checkout` of an approved copy) and false positives (`2>/dev/null`, any `node`/`python`), plus token consumed on false positives | major | TODO | TODO |
-| CQ-3 `sliceOf` gates every `src/shared/<segment>/` by segment name; `store` → `layer-panel`; inherited-key lookup | minor | TODO | TODO |
-| CQ-4 ESLint misses relative upward and deep imports from `shared/` (including `appStore.ts`) and `app/` | minor | TODO | TODO |
-| CQ-5 ESLint `slicesOf` depends on `process.cwd()` | minor | TODO | TODO |
-| CQ-6 `LayerPanel` uses the app-layer `shell-layer` class | minor | TODO | TODO |
-| CQ-7 dashboard-layout PLAN-1/PLAN-3 still active; gate and lint choices unrecorded; plan file-map wording for `useToggleLayer` | minor | TODO | TODO |
-| TC-1 "until props change" half not asserted in `LayerPanel` | minor | TODO | TODO |
-| TC-2 By-hand gate, lint and wrap checks not recorded | minor | TODO | TODO |
+| ID | Severity | Finding | Resolution | AI involvement |
+|---|---|---|---|---|
+| CQ-1 | minor | Two ways to get dispatch; `useAppStoreDispatch` unstable, reason unrecorded | TODO | TODO |
+| CQ-2 | minor | `idle` rendered as loading without a Decision; masks missed `loading` | TODO | TODO |
+| CQ-3 | minor | Hook-order constraint in `ConnectedLayerPanel` enforced only by convention | TODO | TODO |
+| CQ-4 | minor | `sessionStorage` persistence and `MODE !== 'test'` guard not recorded as decisions | TODO | TODO |
+| CQ-5 | minor | `main.tsx` never renders if `worker.start()` rejects | TODO | TODO |
+| CQ-6 | minor | `isRecord` duplicated in `apiError.ts` and `guards.ts` | TODO | TODO |
+| TC-1 | minor | No StrictMode double-mount test | TODO | TODO |
+| TC-2 | minor | No test guards the selector-before-loader order | TODO | TODO |
+| TC-3 | minor | Long-name wrap edge case untested and dropped from the by-hand list | TODO | TODO |
+| TC-4 | minor | App test omits units; empty list not tested through the loader | TODO | TODO |
+| TC-5 | minor | Non-`ApiRequestError` fallback in `useLoadLayers` untested | TODO | TODO |
+| PE-1 | minor | Vedro selectors `JSON.stringify` the layer list on every dispatch | TODO | TODO |
 
 ## Decisions
 
-### REV-1 — Hooks and lint config reviewed as code under Code Quality
-
-- **Status:** active
-- **Decision:** Findings in `.claude/hooks/*.js` and `eslint.config.js` are filed under Code Quality & Maintainability, and they were checked by running them (ESLint on stdin, the approval hook on sample commands) rather than by reading alone.
-- **Options considered:** A separate "Tooling" section; filing under Code Quality; reading only.
-- **Why:** The template has four fixed sections, and regex behaviour is easier to judge from real matches than by reading it.
-- **Trade-off accepted:** Code Quality mixes app code and tooling findings; the IDs and file paths keep them apart.
-- **AI involvement:** The scope was requested by the main agent; the method was chosen by the reviewer.
+None.
