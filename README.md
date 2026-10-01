@@ -52,6 +52,10 @@ A request goes through one function in `shared/api`. It passes an `AbortSignal`,
 
 There is no real backend. MSW serves the mock API in the browser in every build, so the app works with `npm run dev`, with `npm run build`, and on the demo. Responses come with a random delay of 300–1500 ms. Tests do not use MSW: they mock the request functions directly.
 
+## AI usage
+
+I built this project with Claude Code, following Anthropic's AI-native SDLC: design docs, tests, code and review for every feature. Claude wrote most of the documents, tests and code; I reviewed every step and made the architectural decisions. What Claude proposed, what I changed or rejected and why, and my experience with this way of working are in [documents/AI_USAGE.md](documents/AI_USAGE.md).
+
 ## Stack
  
 - React
