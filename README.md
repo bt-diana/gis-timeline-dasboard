@@ -142,7 +142,15 @@ What would change at 100+ layers:
 
 ## AI usage
 
-I built this project with Claude Code, following Anthropic's AI-native SDLC: design docs, tests, code and review for every feature. Claude wrote most of the documents, tests and code; I reviewed every step and made the architectural decisions. What Claude proposed, what I changed or rejected and why, and my experience with this way of working are in [documents/AI_USAGE.md](documents/AI_USAGE.md).
+I built this project with Claude Code, following Anthropic's [AI-native SDLC playbook](https://claude.com/blog/the-ai-native-sdlc-playbook). Each feature goes through three stages on its own branch:
+
+- **Design:** `intent.md` (why), `spec.md` (what) and `plan.md` (how) in `documents/design/<feature>/`, each with a `## Decisions` section.
+- **Build:** failing tests first, then the code.
+- **Deploy:** a review, the README update and the PR.
+
+Every artifact is a stop: Claude writes it, and the next step starts only after I approve it. Each stage has its own agent in `.claude/agents/`: `intent-writer`, `spec-writer`, `plan-writer`, `implementer` and `reviewer`. Hooks in `.claude/hooks/` check the approvals, the review before a push, the commit format and the no-comments rule. How it applies to this project is in [documents/AI_Native_SDLC.md](documents/AI_Native_SDLC.md).
+
+Claude wrote most of the documents, tests and code; I reviewed every step and made the architectural decisions. What Claude proposed, what I changed or rejected and why, and my experience with this way of working are in [documents/AI_USAGE.md](documents/AI_USAGE.md).
 
 ## Stack
  
