@@ -4,10 +4,15 @@ import { TEST_SERIES } from '@shared/test/series'
 import { CHART_LINE_COLORS } from '../config'
 import { buildChartData } from './buildChartData'
 
+const normaliseMock = vi.hoisted(() =>
+  vi.fn((points: readonly { time: string; value: number }[]) =>
+    new Map(points.map(({ time, value }) => [time, { normalised: value / 1000, value }])),
+  ),
+)
+
 vi.mock('@entities/series', async (importOriginal) => ({
   ...(await importOriginal<Record<string, unknown>>()),
-  normaliseSeries: (points: readonly { time: string; value: number }[]) =>
-    new Map(points.map(({ time, value }) => [time, { normalised: value / 1000, value }])),
+  normaliseSeries: normaliseMock,
 }))
 
 const POINTS = ['2026-01-01T10:00:00Z', '2026-01-01T11:00:00Z', '2026-01-01T12:00:00Z']
@@ -42,7 +47,8 @@ describe('buildChartData', () => {
     expect(rows.every(({ values }) => !('temperature' in values))).toBe(true)
   })
 
-  it('ignores series points outside the range', () => {
+  it('ignores series points outside the range, also for scaling', () => {
+    normaliseMock.mockClear()
     const series: SeriesSliceState = {
       temperature: { status: 'success', points: [...TEST_SERIES.temperature.points, { time: '2026-01-01T09:00:00Z', value: 50 }] },
     }
@@ -51,6 +57,7 @@ describe('buildChartData', () => {
 
     expect(rows.map(({ time }) => time)).toEqual(POINTS)
     expect(rows.flatMap(({ values }) => Object.values(values).map(({ value }) => value))).toEqual([-4, 6])
+    expect(normaliseMock).toHaveBeenCalledWith(TEST_SERIES.temperature.points)
   })
 
   it('lists active loading and failed layers, and skips inactive ones', () => {

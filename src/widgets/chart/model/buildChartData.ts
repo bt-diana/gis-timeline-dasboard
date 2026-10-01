@@ -53,7 +53,7 @@ export function buildChartData(
       errors.push({ ...status, message: entry.message })
     } else {
       lines.push({ ...status, unit: layer.unit, color: lineColor(listIndex) })
-      loaded.push({ layerId: layer.id, values: normaliseSeries(entry.points) })
+      loaded.push({ layerId: layer.id, values: normaliseSeries(entry.points.filter(({ time }) => points.includes(time))) })
     }
   })
 
