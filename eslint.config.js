@@ -43,7 +43,7 @@ const higherLayerImports = (layer) => {
 
 const devMocksImports = {
   regex: '(^@shared/mocks|^(\\.\\./)+mocks)(/|$)',
-  message: 'Only src/app/ and main.tsx import the dev mocks (layer-panel PLAN-12).',
+  message: 'Only src/app/ and main.tsx import the mocks (layer-panel PLAN-12).',
 }
 
 const deepSliceImports = {

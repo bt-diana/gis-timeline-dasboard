@@ -59,7 +59,13 @@ Install dependencies:
 npm install
 ```
 
-Start the app locally:
+Start the app locally (the mock API runs in the browser, and a QA control can make requests fail):
+
+```bash
+npm run dev
+```
+
+Build and check the production app (the mock API is included, so the build works without a backend):
 
 ```bash
 npm run build
@@ -88,6 +94,6 @@ This runs the type check, lint, and tests together.
 - src/entities — business entities: layer (types, API call, state slice, selectors)
 - src/shared/api — request function and API errors
 - src/shared/store — the Vedro store
-- src/shared/mocks — MSW mocks for `npm run dev` only
+- src/shared/mocks — MSW mock API, used in every build; the QA control is dev only
 - src/shared/test — test setup and test data
-- documents — requirements, roadmap, design docs and reviews
+- documents — requirements, roadmap and design docs (with each feature's verification in its plan)

@@ -2,13 +2,12 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { App } from './app/App'
 
-async function startDevMocks() {
-  if (!import.meta.env.DEV) return
+async function startMockApi() {
   try {
     const { worker } = await import('./shared/mocks/browser')
-    await worker.start({ onUnhandledRequest: 'bypass' })
+    await worker.start({ onUnhandledRequest: 'bypass', quiet: !import.meta.env.DEV })
   } catch (error: unknown) {
-    console.error('Dev API mocks failed to start; the app runs without them.', error)
+    console.error('The mock API failed to start; layer requests will fail.', error)
   }
 }
 
@@ -23,6 +22,6 @@ function renderApp(container: HTMLElement) {
   )
 }
 
-void startDevMocks().then(() => {
+void startMockApi().then(() => {
   renderApp(root)
 })
