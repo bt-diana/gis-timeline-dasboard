@@ -150,7 +150,9 @@ describe('Chart', () => {
     expect(alerts[1]).toHaveTextContent('Wind')
     expect(alerts[1]).toHaveTextContent('Wind failed.')
 
-    await user.click(within(alerts[1] as HTMLElement).getByRole('button', { name: 'Retry' }))
+    const [, windAlert] = alerts
+    if (!windAlert) throw new Error('Missing Wind alert')
+    await user.click(within(windAlert).getByRole('button', { name: 'Retry' }))
 
     expect(onRetry).toHaveBeenCalledTimes(1)
     expect(onRetry).toHaveBeenCalledWith('wind')

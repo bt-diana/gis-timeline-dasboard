@@ -5,7 +5,7 @@ import { CHART_LINE_COLORS } from '../config'
 import { buildChartData } from './buildChartData'
 
 vi.mock('@entities/series', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('@entities/series')>()),
+  ...(await importOriginal<Record<string, unknown>>()),
   normaliseSeries: (points: readonly { time: string; value: number }[]) =>
     new Map(points.map(({ time, value }) => [time, { normalised: value / 1000, value }])),
 }))

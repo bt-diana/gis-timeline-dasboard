@@ -2,18 +2,17 @@ import type { ReactNode } from 'react'
 import { act, renderHook } from '@testing-library/react'
 import { loadSucceeded } from '@entities/layer'
 import { useSelectedTime } from '@entities/time'
-import { nearestByTimeOfDay } from '@entities/time/model/localTime'
 import { AppStoreProvider, initialAppStoreState, useAppStore } from '@shared/store/appStore'
 import { TEST_LAYERS } from '@shared/test/layers'
 import { useInitialSelectedTime } from './useInitialSelectedTime'
 import { useSelectTime } from './useSelectTime'
 
-vi.mock('@entities/time/model/localTime', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('@entities/time/model/localTime')>()),
-  nearestByTimeOfDay: vi.fn(),
-}))
+const nearestMock = vi.hoisted(() => vi.fn<(points: readonly string[], now: Date) => string | null>())
 
-const nearestMock = vi.mocked(nearestByTimeOfDay)
+vi.mock('@entities/time/model/localTime', async (importOriginal) => ({
+  ...(await importOriginal<Record<string, unknown>>()),
+  nearestByTimeOfDay: nearestMock,
+}))
 const RANGE_POINTS = ['2026-01-01T10:00:00Z', '2026-01-01T11:00:00Z', '2026-01-01T12:00:00Z']
 const NEAREST_POINT = '2026-01-01T11:00:00Z'
 const OTHER_POINT = '2026-01-01T12:00:00Z'

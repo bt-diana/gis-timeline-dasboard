@@ -3,7 +3,7 @@ import type { ChartLine, ChartRow } from '../model/buildChartData'
 import { ChartTooltip } from './ChartTooltip'
 
 vi.mock('@entities/time', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('@entities/time')>()),
+  ...(await importOriginal<Record<string, unknown>>()),
   formatLocalTime: (iso: string) => `local ${iso}`,
 }))
 

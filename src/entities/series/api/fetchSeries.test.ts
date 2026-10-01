@@ -4,7 +4,7 @@ import { isLayerSeries } from '../model/guards'
 import { fetchSeries } from './fetchSeries'
 
 vi.mock('@shared/api', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('@shared/api')>()),
+  ...(await importOriginal<Record<string, unknown>>()),
   request: vi.fn(),
 }))
 

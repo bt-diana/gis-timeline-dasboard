@@ -1,0 +1,94 @@
+.chart {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  box-sizing: border-box;
+  min-height: 0;
+  height: 100%;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--surface);
+  padding: 12px;
+}
+
+.chart__heading {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.chart__status {
+  margin: 0;
+  color: var(--muted);
+}
+
+.chart__error {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.chart__error-message {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.chart__retry {
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: #ffffff;
+  color: var(--text);
+  cursor: pointer;
+  padding: 4px 12px;
+}
+
+.chart__plot {
+  flex: 1 1 auto;
+  min-height: 0;
+  cursor: pointer;
+}
+
+.chart__marker line {
+  stroke: var(--text);
+  stroke-dasharray: 4 4;
+}
+
+.chart-tooltip {
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: #ffffff;
+  padding: 8px;
+  font-size: 0.875rem;
+}
+
+.chart-tooltip__time {
+  margin: 0 0 4px;
+  font-weight: 600;
+}
+
+.chart-tooltip__list {
+  display: grid;
+  gap: 2px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.chart-tooltip__item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.chart-tooltip__swatch {
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+}
+
+.chart-tooltip__value {
+  margin-left: auto;
+  padding-left: 12px;
+  font-variant-numeric: tabular-nums;
+}
