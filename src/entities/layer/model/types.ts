@@ -1,8 +1,9 @@
 export type RenderingKind = 'points' | 'arrows' | 'heatmap'
 
-export interface LayerSummary {
-  id: string
-  name: string
-  kind: RenderingKind
-  unit: string
+export interface LayerDefinition {
+  readonly id: string
+  readonly name: string
+  readonly kind: RenderingKind
+  readonly unit: string
+  readonly timePoints: readonly string[]
 }

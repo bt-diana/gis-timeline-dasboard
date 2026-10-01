@@ -1,3 +1,5 @@
-export type { LayerSummary, RenderingKind } from './model/types'
-export { toggleLayer } from './model/layerSlice'
-export { useActiveLayerIds, useLayers } from './model/selectors'
+export { fetchLayers } from './api/fetchLayers'
+export type { LayerDefinition, RenderingKind } from './model/types'
+export { loadFailed, loadSucceeded, startLoading, toggleLayer, type LayerListState } from './model/layerSlice'
+export { useActiveLayerIds, useLayerList, useLayers, useTimelineRange } from './model/selectors'
+export type { TimelineRange } from './model/timelineRange'

@@ -41,6 +41,11 @@ const higherLayerImports = (layer) => {
       ]
 }
 
+const devMocksImports = {
+  regex: '(^@shared/mocks|^(\\.\\./)+mocks)(/|$)',
+  message: 'Only src/app/ and main.tsx import the dev mocks (layer-panel PLAN-12).',
+}
+
 const deepSliceImports = {
   regex: `^@(${SLICED_LAYERS.join('|')})/[^/]+/`,
   message: 'Import another slice only through its index.ts (layer-panel INT-4).',
@@ -49,6 +54,7 @@ const deepSliceImports = {
 const sliceImports = (layer, slice, nesting) => [
   ...higherLayerImports(layer),
   deepSliceImports,
+  devMocksImports,
   {
     regex: `^@${layer}/(?!${escapeRegex(slice)}$)`,
     message: `Slices of src/${layer}/ do not import each other (layer-panel INT-4).`,
@@ -77,8 +83,16 @@ const relativeLayerImports = (layer) => ({
 
 const appBoundaries = restrictImports(['src/app/**/*.{ts,tsx}'], [deepSliceImports, relativeLayerImports('app')])
 
-const sharedBoundaries = restrictImports(
-  ['src/shared/**/*.{ts,tsx}'],
+const sharedBoundaries = {
+  ...restrictImports(
+    ['src/shared/**/*.{ts,tsx}'],
+    [...higherLayerImports('shared'), relativeLayerImports('shared'), devMocksImports],
+  ),
+  ignores: ['src/shared/mocks/**'],
+}
+
+const sharedMocksBoundaries = restrictImports(
+  ['src/shared/mocks/**/*.{ts,tsx}'],
   [...higherLayerImports('shared'), relativeLayerImports('shared')],
 )
 
@@ -86,6 +100,7 @@ const storeException = restrictImports(
   [STORE_FILE],
   [
     relativeLayerImports('shared'),
+    devMocksImports,
     {
       regex: `^@(?!entities/[^/]+/model/[^/]+Slice$)(${LAYER_ORDER.filter((layer) => layer !== 'shared').join('|')})(/|$)`,
       message: 'appStore.ts may import only entity slice files (layer-panel PLAN-5).',
@@ -94,7 +109,7 @@ const storeException = restrictImports(
 )
 
 export default tseslint.config(
-  { ignores: ['dist', 'coverage'] },
+  { ignores: ['dist', 'coverage', 'public/mockServiceWorker.js'] },
   {
     files: ['**/*.{ts,tsx}'],
     extends: [
@@ -122,5 +137,6 @@ export default tseslint.config(
   ...sliceBoundaries,
   appBoundaries,
   sharedBoundaries,
+  sharedMocksBoundaries,
   storeException,
 )
