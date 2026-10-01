@@ -50,7 +50,7 @@ The decisions are recorded in `documents/design/layer-panel/` (INT-3 – INT-5, 
 
 A request goes through one function in `shared/api`. It passes an `AbortSignal`, checks the response against the API contract, and turns any failure into a short message for the user. The `layer` entity has the API call, and the `load-layers` feature writes the result to the store. When a new request starts, the old one is cancelled, and only the newest response is written, so a slow old response never replaces a newer one.
 
-There is no real backend. MSW serves the mock API in the browser in every build, so the app works with `npm run dev`, with `npm run build`, and on the demo. Responses come with a random delay of 300–1500 ms. In dev, a small QA control can make the requests fail, to check the error state. Tests do not use MSW: they mock the request functions directly.
+There is no real backend. MSW serves the mock API in the browser in every build, so the app works with `npm run dev`, with `npm run build`, and on the demo. Responses come with a random delay of 300–1500 ms. Tests do not use MSW: they mock the request functions directly.
 
 ## Stack
  
@@ -71,7 +71,7 @@ Install dependencies:
 npm install
 ```
 
-Start the app locally (the mock API runs in the browser, and a QA control can make requests fail):
+Start the app locally (the mock API runs in the browser):
 
 ```bash
 npm run dev

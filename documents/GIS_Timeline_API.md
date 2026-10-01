@@ -77,7 +77,7 @@ The UI shows `error.message` only, never the raw response (TR-30).
 
 - Latency: every response is delayed 300–1500 ms at random, so responses can arrive out of order (TR-33).
 - Cancellation: callers pass an `AbortSignal`; a superseded request is aborted and its result discarded (TR-31).
-- Failure injection: in dev only, a QA control switches failing responses (`500`) on and off; requests succeed by default (layer-panel SPEC-4). Tests mock the request functions instead of using MSW (SPEC-7).
+- Tests mock the request functions instead of using MSW (layer-panel SPEC-7); the error states are covered there.
 
 ## Open points
 

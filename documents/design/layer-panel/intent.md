@@ -13,7 +13,7 @@ The layer region is a stub. Users cannot see which layers exist, switch them on 
 
 - BR-02, BR-03, BR-04, BR-09, BR-10, BR-11, AR-01 (roadmap task 3; previous roadmap tasks 3, 7 and 8, INT-5).
 - Supporting: TR-05 (MSW), TR-10/TR-11 (Vedro store as the source of truth), TR-20/TR-21 (layers described by data), TR-22 (timeline range derived from the layers), TR-30 (loading/error/success rendered), TR-31 (superseded requests discarded), TR-33 (latency), TR-60 (dependencies point one way), TR-71 (panel re-renders only on its own state), TR-82 (tests for states and races).
-- Contract: `GIS_Timeline_API.md` (`GET /api/layers`, `ApiError`, latency, failure injection).
+- Contract: `GIS_Timeline_API.md` (`GET /api/layers`, `ApiError`, latency).
 - Layout: dashboard-layout INT-0 (panel content), INT-4 (per-layer error with retry in the panel).
 
 ## Goals
@@ -23,7 +23,6 @@ The layer region is a stub. Users cannot see which layers exist, switch them on 
 - The layer slice in the Vedro store holds the definitions, the active layer ids and the list request status (INT-3, INT-5); a selector derives the shared timeline range from the layers' time points (TR-22).
 - The panel renders list loading, error with retry, empty and success (INT-2); a retry supersedes a pending request.
 - One on/off switch per layer that changes the active layers in the store (INT-3); keyboard-operable, accessible name per layer.
-- A test-only failure-injection switch in the mock, so the error states are tested and demoable.
 - Code follows Feature-Sliced Design (INT-4).
 
 ## Non-goals
