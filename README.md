@@ -133,11 +133,9 @@ What would change at 100+ layers:
 
 - **The chart is the time picker.** The requirement asks for a timeline; the chart already shows every time point, so a second control would duplicate it. Time is selected only by a click, not from the keyboard, and there is no autoplay.
 - **Each chart line is scaled to its own range.** Three units (°C, m/s, W/m²) fit on one chart without three axes. The Y axis has no absolute values; real values are in the tooltip.
-- **Local time.** The first selected time and the labels use the browser's time zone, so viewers in different zones see different labels.
 - **One loading indicator** above the map instead of one per layer. It doesn't say which layer is still loading.
 - **Errors in two places.** A failed series shows its error and retry in the chart, a failed snapshot in the layer panel.
 - **Series stay in memory** after their layer is switched off, so switching it on again is instant.
-- **Vedro's hooks as they are.** I didn't replace them with my own, because the task is to show how Vedro is used.
 - **A mock API in production.** MSW runs in the built app, because there is no backend and the demo must work.
 - **A plain background.** Bundled GeoJSON instead of real tiles; the task is about architecture, not visuals.
 - **Desktop only.** No mobile layout.
