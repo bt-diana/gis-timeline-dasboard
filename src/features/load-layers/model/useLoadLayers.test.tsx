@@ -29,7 +29,12 @@ function wrapper({ children }: { children: ReactNode }) {
 
 function renderLoader() {
   return renderHook(
-    () => ({ retry: useLoadLayers(), list: useLayerList(), layers: useLayers(), activeLayerIds: useActiveLayerIds() }),
+    () => {
+      const list = useLayerList()
+      const layers = useLayers()
+      const activeLayerIds = useActiveLayerIds()
+      return { list, layers, activeLayerIds, retry: useLoadLayers() }
+    },
     { wrapper },
   )
 }
