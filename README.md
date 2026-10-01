@@ -11,14 +11,6 @@ Demo: https://gis-timeline-dasboard.netlify.app/
 A small React + TypeScript app with an interactive map, several data layers, a timeline and charts.
 The goal is to build one data flow between the map, the timeline and the charts, so all of them always show the same state.
  
-## Status
-
-Done:
-
-- [x] Layer panel: the layer list comes from the mock API, each layer can be switched on and off, and the panel shows loading, an error with a Retry button, and an empty list.
-
-Next, as in the roadmap: the chart with time selection, then the map, then the final README.
-
 ## Architecture
 
 The code follows [Feature-Sliced Design](https://feature-sliced.design/). Each layer imports only from the layers below it, and slices on the same layer don't import each other.
@@ -40,12 +32,6 @@ State lives in one Vedro store. Each entity keeps its part of the state in its o
 
 UI components get their data through props. A connected part of the widget reads the store and passes the data and actions down. I use Vedro's own hooks as they are; my custom hooks only add logic on top of them.
 
-### Data flow
-
-A request goes through one function in `shared/api`. It passes an `AbortSignal`, checks the response against the API contract, and turns any failure into a short message for the user. The `layer` entity has the API call, and the `load-layers` feature writes the result to the store. When a new request starts, the old one is cancelled, and only the newest response is written, so a slow old response never replaces a newer one.
-
-There is no real backend. MSW serves the mock API in the browser in every build, so the app works with `npm run dev`, with `npm run build`, and on the demo. Responses come with a random delay of 300–1500 ms. In dev, a small QA control can make the requests fail, to check the error state. Tests do not use MSW: they mock the request functions directly.
-
 ### How it evolved
 
 At first, code was grouped by feature in `src/features/<feature>/`, with shared code in `src/shared/`. The layer panel was planned as a component driven only by props, and the store was planned for a later task, together with the API requests.
@@ -59,6 +45,12 @@ Later I decided that each roadmap task should be a fully working feature, not a 
 During the review, Claude proposed to replace Vedro's hooks with its own hooks on React's `useSyncExternalStore`. I rejected it: the task is to show how Vedro is used, so I keep Vedro's hooks as they are and accept their limits.
 
 The decisions are recorded in `documents/design/layer-panel/` (INT-3 – INT-5, SPEC-7, PLAN-5, PLAN-7, PLAN-12 – PLAN-15).
+
+## Data flow
+
+A request goes through one function in `shared/api`. It passes an `AbortSignal`, checks the response against the API contract, and turns any failure into a short message for the user. The `layer` entity has the API call, and the `load-layers` feature writes the result to the store. When a new request starts, the old one is cancelled, and only the newest response is written, so a slow old response never replaces a newer one.
+
+There is no real backend. MSW serves the mock API in the browser in every build, so the app works with `npm run dev`, with `npm run build`, and on the demo. Responses come with a random delay of 300–1500 ms. In dev, a small QA control can make the requests fail, to check the error state. Tests do not use MSW: they mock the request functions directly.
 
 ## Stack
  
@@ -105,15 +97,3 @@ npm run verify
 ```
 
 This runs the type check, lint, and tests together.
-
-## Repository organization
-
-- src/app — app shell, store provider and the dev-only QA control
-- src/widgets — layer-panel, header, map and chart
-- src/features — user actions: toggle-layer, load-layers
-- src/entities — business entities: layer (types, API call, state slice, selectors)
-- src/shared/api — request function and API errors
-- src/shared/store — the Vedro store
-- src/shared/mocks — MSW mock API, used in every build; the QA control is dev only
-- src/shared/test — test setup and test data
-- documents — requirements, roadmap and design docs (with each feature's verification in its plan)
