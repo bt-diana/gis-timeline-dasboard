@@ -52,7 +52,7 @@ revision: 4
 
 - Types from the contract: `LayerDefinition`, `RenderingKind`, `ApiError` (replaces `LayerSummary`).
 - Layer slice: `layers`, `activeLayerIds`, list request state; transitions for load start, success, failure and toggle; timeline-range selector.
-- Endpoint: `GET /api/layers`; its MSW handler, latency and failure switch exist in dev only, with the QA control.
+- Endpoint: `GET /api/layers`; its MSW handler, latency and failure switch are in every build (SPEC-7); the QA control is dev-only.
 - Fixtures move from the store seed to the dev mock data; tests keep their own data.
 
 ## Edge cases

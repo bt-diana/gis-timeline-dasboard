@@ -18,7 +18,7 @@ The layer region is a stub. Users cannot see which layers exist, switch them on 
 
 ## Goals
 
-- The layer list is loaded from `GET /api/layers`, served by MSW in dev and tests, with the contract's latency and error codes (INT-5).
+- The layer list is loaded from `GET /api/layers`, served by MSW in every build (spec SPEC-7; tests mock the requests), with the contract's latency and error codes (INT-5).
 - A shared API client core: one request function with `AbortSignal`, response validation against the contract types, `ApiError` turned into a user-readable message (INT-5).
 - The layer slice in the Vedro store holds the definitions, the active layer ids and the list request status (INT-3, INT-5); a selector derives the shared timeline range from the layers' time points (TR-22).
 - The panel renders list loading, error with retry, empty and success (INT-2); a retry supersedes a pending request.
