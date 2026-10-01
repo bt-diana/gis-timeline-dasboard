@@ -11,10 +11,18 @@ async function startDevMocks() {
 const root = document.getElementById('root')
 if (!root) throw new Error('Root element #root not found')
 
-void startDevMocks().then(() => {
-  createRoot(root).render(
+function renderApp(container: HTMLElement) {
+  createRoot(container).render(
     <StrictMode>
       <App />
     </StrictMode>,
   )
-})
+}
+
+void startDevMocks()
+  .catch((error: unknown) => {
+    console.error('Dev API mocks failed to start; the app runs without them.', error)
+  })
+  .then(() => {
+    renderApp(root)
+  })

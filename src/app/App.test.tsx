@@ -1,3 +1,4 @@
+import { StrictMode } from 'react'
 import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { fetchLayers } from '@entities/layer'
@@ -46,6 +47,38 @@ describe('App shell', () => {
     const switches = await within(layer).findAllByRole('switch')
     expect(switches.map((toggle) => toggle.textContent)).toEqual(['Temperature', 'Wind', 'Insolation'])
     expect(switches.map((toggle) => toggle.getAttribute('aria-checked'))).toEqual(['true', 'false', 'false'])
+  })
+
+  it('shows each loaded layer with its unit', async () => {
+    const { layer } = renderLandmarks()
+
+    for (const definition of TEST_LAYERS) {
+      const row = (await within(layer).findByRole('switch', { name: definition.name })).closest('li')
+      expect(row).not.toBeNull()
+      expect(within(row as HTMLElement).getByText(definition.unit)).toBeVisible()
+    }
+  })
+
+  it('shows the empty state when the API returns no layers', async () => {
+    fetchLayersMock.mockResolvedValue([])
+    const { layer } = renderLandmarks()
+
+    expect(await within(layer).findByText('No layers available')).toBeVisible()
+    expect(within(layer).queryAllByRole('switch')).toHaveLength(0)
+  })
+
+  it('under StrictMode aborts the first mount request and shows the list once', async () => {
+    render(
+      <StrictMode>
+        <App />
+      </StrictMode>,
+    )
+    const layer = screen.getByRole('complementary', { name: 'Layers' })
+
+    expect(await within(layer).findAllByRole('switch')).toHaveLength(3)
+    expect(fetchLayersMock).toHaveBeenCalledTimes(2)
+    expect(fetchLayersMock.mock.calls[0]?.[0].aborted).toBe(true)
+    expect(fetchLayersMock.mock.calls[1]?.[0].aborted).toBe(false)
   })
 
   it('toggles a layer on and off without changing the other switches', async () => {

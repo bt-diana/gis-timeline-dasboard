@@ -1,8 +1,7 @@
+import { isRecord } from '@shared/lib'
 import type { LayerDefinition, RenderingKind } from './types'
 
 const RENDERING_KINDS: readonly string[] = ['points', 'arrows', 'heatmap'] satisfies RenderingKind[]
-
-const isRecord = (value: unknown): value is Record<string, unknown> => typeof value === 'object' && value !== null
 
 const isString = (value: unknown): value is string => typeof value === 'string'
 

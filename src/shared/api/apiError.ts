@@ -1,3 +1,5 @@
+import { isRecord } from '../lib'
+
 export type ApiErrorCode = 'BAD_REQUEST' | 'NOT_FOUND' | 'NO_DATA' | 'INTERNAL'
 
 export interface ApiError {
@@ -5,8 +7,6 @@ export interface ApiError {
 }
 
 const API_ERROR_CODES: readonly string[] = ['BAD_REQUEST', 'NOT_FOUND', 'NO_DATA', 'INTERNAL']
-
-const isRecord = (value: unknown): value is Record<string, unknown> => typeof value === 'object' && value !== null
 
 export function isApiError(value: unknown): value is ApiError {
   if (!isRecord(value) || !isRecord(value.error)) return false

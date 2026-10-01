@@ -1,9 +1,9 @@
 import { useCallback } from 'react'
 import { toggleLayer } from '@entities/layer'
-import { useAppStoreDispatch } from '@shared/store/appStore'
+import { useAppDispatch } from '@shared/store/appStore'
 
 export function useToggleLayer() {
-  const dispatch = useAppStoreDispatch()
+  const dispatch = useAppDispatch()
 
   return useCallback(
     (layerId: string) => {

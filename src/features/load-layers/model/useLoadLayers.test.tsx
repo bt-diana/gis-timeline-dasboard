@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
 import { act, render, renderHook, screen, waitFor } from '@testing-library/react'
 import { fetchLayers, useActiveLayerIds, useLayerList, useLayers, type LayerDefinition } from '@entities/layer'
-import { ApiRequestError } from '@shared/api'
+import { API_MESSAGES, ApiRequestError } from '@shared/api'
 import { AppStoreProvider, initialAppStoreState } from '@shared/store/appStore'
 import { deferred, type Deferred } from '@shared/test/deferred'
 import { TEST_LAYERS } from '@shared/test/layers'
@@ -29,12 +29,7 @@ function wrapper({ children }: { children: ReactNode }) {
 
 function renderLoader() {
   return renderHook(
-    () => {
-      const list = useLayerList()
-      const layers = useLayers()
-      const activeLayerIds = useActiveLayerIds()
-      return { list, layers, activeLayerIds, retry: useLoadLayers() }
-    },
+    () => ({ retry: useLoadLayers(), list: useLayerList(), layers: useLayers(), activeLayerIds: useActiveLayerIds() }),
     { wrapper },
   )
 }
@@ -115,6 +110,20 @@ describe('useLoadLayers', () => {
 
     expect(result.current.layers).toEqual(secondList)
     expect(result.current.activeLayerIds).toEqual(['wind'])
+  })
+
+  it('shows the fixed message for an error that is not an ApiRequestError', async () => {
+    const { responses } = queueResponses(1)
+    const { result } = renderLoader()
+
+    await act(async () => {
+      responses[0]?.reject(new Error('boom'))
+      await Promise.resolve()
+    })
+
+    await waitFor(() => {
+      expect(result.current.list).toEqual({ status: 'error', message: API_MESSAGES.unexpected })
+    })
   })
 
   it('a failure of a superseded request is discarded too', async () => {
