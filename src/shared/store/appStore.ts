@@ -12,20 +12,29 @@ export const initialAppStoreState: AppStoreState = {
   layer: initialLayerState,
 }
 
-export const {
-  Context: AppStoreContext,
-  Provider: AppStoreProvider,
-  useStore: useAppStore,
-} = createVedro(initialAppStoreState)
+const { Provider, useStore } = createVedro(initialAppStoreState)
+
+export const AppStoreProvider = Provider
 
 export function useAppStoreSelector<T>(select: (state: AppStoreState) => T): T {
-  const store = useAppStore()
-  const subscribe = useCallback((onChange: () => void) => store.on('@state', onChange), [store])
+  const store = useStore()
+  const subscribe = useCallback(
+    (onChange: () => void) => {
+      const unsubscribe = store.on('@state', onChange)
+      let subscribed = true
+      return () => {
+        if (!subscribed) return
+        subscribed = false
+        unsubscribe()
+      }
+    },
+    [store],
+  )
   return useSyncExternalStore(subscribe, () => select(store.get()))
 }
 
 export function useAppDispatch(): (update: AppStoreUpdate) => void {
-  const store = useAppStore()
+  const store = useStore()
   return useCallback(
     (update: AppStoreUpdate) => {
       store.dispatch(update)

@@ -4,8 +4,12 @@ import { App } from './app/App'
 
 async function startDevMocks() {
   if (!import.meta.env.DEV) return
-  const { worker } = await import('./shared/mocks/browser')
-  await worker.start({ onUnhandledRequest: 'bypass' })
+  try {
+    const { worker } = await import('./shared/mocks/browser')
+    await worker.start({ onUnhandledRequest: 'bypass' })
+  } catch (error: unknown) {
+    console.error('Dev API mocks failed to start; the app runs without them.', error)
+  }
 }
 
 const root = document.getElementById('root')
@@ -19,10 +23,6 @@ function renderApp(container: HTMLElement) {
   )
 }
 
-void startDevMocks()
-  .catch((error: unknown) => {
-    console.error('Dev API mocks failed to start; the app runs without them.', error)
-  })
-  .then(() => {
-    renderApp(root)
-  })
+void startDevMocks().then(() => {
+  renderApp(root)
+})
