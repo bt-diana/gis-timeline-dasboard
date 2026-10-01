@@ -9,7 +9,7 @@ status: draft
 | File | Change |
 |---|---|
 | `src/<layer>/<slice>/...` | new / modified |
-| `src/mocks/...` | new, if MSW handlers change |
+| `src/shared/mocks/...` | new, if MSW handlers change |
 
 ## Build sequence
 
@@ -20,6 +20,27 @@ status: draft
 Business-critical logic and key user flows to cover. Every acceptance criterion in `spec.md` maps to at least one test.
 
 - [ ] ...
+
+## Verification
+
+Written by the `reviewer` agent after the user accepts the implementation; the push gate reads it. The user approves it by setting the Status below, only after reading the findings and resolutions.
+
+- **Reviewed commit:** `<full HEAD sha>`
+- **Status:** draft
+
+### Checks
+
+- [ ] `npm run verify`
+- [ ] `npm run build` (and anything the build must or must not contain)
+- [ ] By hand: ...
+
+### Findings
+
+One row per finding from the Security, Code Quality & Maintainability, Test Coverage & Correctness and Performance & Efficiency lenses, or "No findings." per lens.
+
+| ID | Lens | Severity | Finding | Resolution | AI involvement |
+|---|---|---|---|---|---|
+| CQ-1 | Code Quality | minor | `file:line` — ... | TODO | |
 
 ## Decisions
 

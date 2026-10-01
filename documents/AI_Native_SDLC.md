@@ -22,20 +22,20 @@ Design ──intent.md, spec.md, plan.md──▶ Build ──tests + code diff�
 | 3 | `documents/design/<feature>/plan.md` | writing any test |
 | 4 | Failing tests (TDD red) | writing implementation |
 | 5 | Implementation with green tests (plus any design-doc corrections) | launching the review |
-| 6 | `documents/reviews/<branch-slug>.md` + resolutions | refreshing the README |
+| 6 | `## Verification` section of `plan.md` (checks, findings, resolutions) | refreshing the README |
 | 7 | `README.md` update (or explicit "no change needed") | the user's push command |
 
 Approval for artifacts 1–3 and 6 is recorded in the file itself: the agent writes `status: draft` in the frontmatter, and switches it to `status: approved` **only after the user says so in chat**. The hooks below check that flag. Approval for 4, 5 and 7 is conversational.
 
 ## Branching
 
-Each Design → Build → Deploy cycle happens on its own feature branch, named `feature/<feature-slug>` where `<feature-slug>` matches the `documents/design/<feature>/` folder (e.g. `feature/timeline` for `documents/design/timeline/`). Create it before the Design stage; all artifacts land as commits on that branch until it's merged. `documents/reviews/<branch-slug>.md` is keyed by branch name, so the Deploy-stage gate only works if each feature has its own branch. The base branch is `main`.
+Each Design → Build → Deploy cycle happens on its own feature branch, named `feature/<feature-slug>` where `<feature-slug>` matches the `documents/design/<feature>/` folder (e.g. `feature/timeline` for `documents/design/timeline/`). Create it before the Design stage; all artifacts land as commits on that branch until it's merged. The push gate finds the plan from the branch name, so the Deploy-stage gate only works if each feature has its own branch. The base branch is `main`.
 
 The first commit on a new feature branch marks the feature `in progress` in `documents/ROADMAP.md`; the intent commit follows it.
 
 ## Decisions at every stage
 
-Engineering decisions are part of the artifacts, not a separate log. **Every artifact carries a `## Decisions` section** (`intent.md`, `spec.md`, `plan.md`, and the review file), listing each non-obvious choice with: decision, options considered, why, trade-off accepted, and AI involvement (who proposed it; accepted / changed / rejected and why). IDs are `INT-n`, `SPEC-n`, `PLAN-n`, `REV-n`.
+Engineering decisions are part of the artifacts, not a separate log. **Every artifact carries a `## Decisions` section** (`intent.md`, `spec.md`, `plan.md`), listing each non-obvious choice with: decision, options considered, why, trade-off accepted, and AI involvement (who proposed it; accepted / changed / rejected and why). IDs are `INT-n`, `SPEC-n`, `PLAN-n`.
 
 - Decisions are approved together with the artifact that contains them.
 - Stages without their own file (tests, implementation, README) record their decisions in `plan.md`'s `## Decisions`, marked "(build)", and show them to the user.
@@ -68,7 +68,7 @@ Start from `documents/design/TEMPLATE/`. Before drafting `intent.md`, check `doc
 
 ## Deploy stage
 
-**Artifact:** `documents/reviews/<branch-slug>.md` — consolidated findings from the `reviewer` agent (`.claude/agents/reviewer.md`), then an up-to-date `README.md`, then the PR.
+**Artifact:** the `## Verification` section of `documents/design/<feature>/plan.md` — the checks run and the consolidated findings from the `reviewer` agent (`.claude/agents/reviewer.md`), then an up-to-date `README.md`, then the PR.
 
 The `reviewer` agent fans out to four parallel, independent subagents:
 
@@ -79,18 +79,9 @@ The `reviewer` agent fans out to four parallel, independent subagents:
 | Test Coverage & Correctness | Every `spec.md` acceptance criterion exercised; race conditions and loading states tested; tests assert observable behavior |
 | Performance & Efficiency | Needless re-renders on timeline change, large layer payloads, chart/map redraw cost, missing cancellation of stale requests |
 
-The review file's frontmatter records the exact commit reviewed and approval state:
+The Verification section records the exact commit reviewed and its approval state (`- **Reviewed commit:** \`<sha>\`` and `- **Status:** draft`); its structure is in `documents/design/TEMPLATE/plan.md`. There is no separate review file.
 
-```markdown
----
-commit: <HEAD sha at review time>
-status: draft
----
-```
-
-Review files are local working files, not tracked in git (`.gitignore` keeps only `TEMPLATE.md`); the push gate reads them from the working tree, so committing never moves `HEAD` away from the reviewed commit.
-
-After the reviewer writes it, the agent walks the user through findings and proposes a resolution for each (fixed / deferred / accepted, with rationale). Fixes are applied only as the user approves; then the user approves the review file (`status: approved`). Re-run the reviewer and update `commit:` whenever new commits land after the last review — the push gate checks this.
+After the reviewer writes it, the agent walks the user through findings and proposes a resolution for each (fixed / deferred / accepted, with rationale). Fixes are applied only as the user approves; then the user approves the section (`- **Status:** approved`). Committing the plan after the review is fine: the push gate only requires that no file outside `documents/` changed since the reviewed commit. Re-run the reviewer when code changes.
 
 Then refresh `README.md` (features checklist, architecture, scripts, stack, and the trade-offs / AI-usage sections assembled from the approved Decisions entries) against what the feature actually shipped — or state explicitly that nothing changed. **Get approval**, commit on the feature branch, and only then push. When the user commands a push, the agent also opens the PR against `main` and writes its description (intent, key decisions, test coverage, review findings and resolutions, what to verify by hand). Commits authored by Claude carry no `Co-Authored-By` trailer; commits under the user's git identity name Claude as co-author through that trailer. Never push or open a PR unprompted. Merging the PR remains a human action.
 
@@ -102,7 +93,7 @@ Then refresh `README.md` (features checklist, architecture, scripts, stack, and 
 
 Claude Code `PreToolUse` hooks (`.claude/settings.json`, scripts in `.claude/hooks/`):
 
-- **`review-gate.js`** — blocks `git push` unless `documents/reviews/<branch-slug>.md` exists, its `commit:` matches `HEAD`, and it has `status: approved`.
+- **`review-gate.js`** — blocks `git push` of `feature/<slug>` unless the `## Verification` section of `documents/design/<slug>/plan.md` names a reviewed commit in the branch history, no file outside `documents/` changed since it, and the section's Status is `approved`.
 - **`approval-gate.js`** — on Write and Edit: blocks setting `status: approved` in a design or review artifact unless the user's last message approved it (token written by `approval-record.js` on `UserPromptSubmit`). On Bash it records every artifact's status before the command; the `PostToolUse` hook **`approval-bash-check.js`** compares them after it and puts back any status that became `approved` without the user's approval.
 
 There is no commit gate: anything may be committed, drafts included. `review-gate.js` accepts a deliberate bypass: prefix the command with `SDLC_SKIP_GATE=1`. It exists so a misfiring gate doesn't block real work, not as a routine escape; if you reach for it often, fix the gate.

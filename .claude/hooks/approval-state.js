@@ -4,6 +4,7 @@ const path = require('node:path');
 const TOKEN_TTL_MS = 30 * 60 * 1000;
 const STATUS_LINE = /^status:[ \t]*(\S+)[ \t]*$/m;
 const ARTIFACTS = ['intent.md', 'spec.md', 'plan.md'];
+const VERIFICATION_KEY = '#verification';
 
 function readIfExists(file) {
   try {
@@ -19,6 +20,22 @@ function frontmatterStatus(text) {
   return m ? m[1] : null;
 }
 
+// The `## Verification` section of a plan, up to the next `## ` heading.
+function verificationSection(text) {
+  const m = text && text.match(/^## Verification[ \t]*\r?\n([\s\S]*?)(?=^## |(?![\s\S]))/m);
+  return m ? m[1] : null;
+}
+
+function verificationStatus(text) {
+  const m = (verificationSection(text) || '').match(/^- \*\*Status:\*\*[ \t]*(\S+)/m);
+  return m ? m[1] : null;
+}
+
+function reviewedCommit(text) {
+  const m = (verificationSection(text) || '').match(/^- \*\*Reviewed commit:\*\*[ \t]*`?([0-9a-f]{7,40})`?/m);
+  return m ? m[1] : null;
+}
+
 function listDir(dir) {
   try {
     return fs.readdirSync(dir, { withFileTypes: true });
@@ -27,24 +44,22 @@ function listDir(dir) {
   }
 }
 
-// Every design and review artifact whose approval the gates guard.
-function artifactPaths(root) {
+function designArtifactPaths(root) {
   const design = path.join(root, 'documents', 'design');
-  const reviews = path.join(root, 'documents', 'reviews');
-  const designFiles = listDir(design)
+  return listDir(design)
     .filter((entry) => entry.isDirectory() && entry.name !== 'TEMPLATE')
     .flatMap((entry) => ARTIFACTS.map((name) => path.join(design, entry.name, name)));
-  const reviewFiles = listDir(reviews)
-    .filter((entry) => entry.isFile() && entry.name.endsWith('.md') && entry.name !== 'TEMPLATE.md')
-    .map((entry) => path.join(reviews, entry.name));
-  return [...designFiles, ...reviewFiles];
 }
 
+// Approval state of every design artifact, plus each plan's Verification section.
 function statuses(root) {
   const result = {};
-  for (const file of artifactPaths(root)) {
+  for (const file of designArtifactPaths(root)) {
     const text = readIfExists(file);
-    if (text !== null) result[path.relative(root, file)] = frontmatterStatus(text);
+    if (text === null) continue;
+    const relPath = path.relative(root, file);
+    result[relPath] = frontmatterStatus(text);
+    if (relPath.endsWith('plan.md')) result[relPath + VERIFICATION_KEY] = verificationStatus(text);
   }
   return result;
 }
@@ -65,13 +80,25 @@ function consumeApprovalToken(root) {
   }
 }
 
-// Puts a file's frontmatter status back to what it was before the command.
-function restoreStatus(root, relPath, previous) {
-  const file = path.join(root, relPath);
+// Puts a status that became "approved" back to what it was before the command.
+function restoreStatus(root, key, previous) {
+  const isVerification = key.endsWith(VERIFICATION_KEY);
+  const file = path.join(root, isVerification ? key.slice(0, -VERIFICATION_KEY.length) : key);
   const text = readIfExists(file);
   if (text === null) return;
-  const restored = text.replace(/^(---\r?\n[\s\S]*?)^status:[ \t]*approved[ \t]*$/m, `$1status: ${previous || 'draft'}`);
+  const restored = isVerification
+    ? text.replace(/(^## Verification[\s\S]*?^- \*\*Status:\*\*[ \t]*)approved/m, `$1${previous || 'draft'}`)
+    : text.replace(/^(---\r?\n[\s\S]*?)^status:[ \t]*approved[ \t]*$/m, `$1status: ${previous || 'draft'}`);
   fs.writeFileSync(file, restored);
 }
 
-module.exports = { statuses, snapshotPath, consumeApprovalToken, restoreStatus, frontmatterStatus };
+module.exports = {
+  statuses,
+  snapshotPath,
+  consumeApprovalToken,
+  restoreStatus,
+  frontmatterStatus,
+  verificationSection,
+  verificationStatus,
+  reviewedCommit,
+};

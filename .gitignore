@@ -26,5 +26,3 @@ dist-ssr
 .claude/approval-token.json
 .claude/approval-snapshots/
 
-documents/reviews/*
-!documents/reviews/TEMPLATE.md

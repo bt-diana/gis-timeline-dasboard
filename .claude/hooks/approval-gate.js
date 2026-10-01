@@ -1,10 +1,10 @@
 const fs = require('node:fs');
 const path = require('node:path');
-const { statuses, snapshotPath, consumeApprovalToken: consumeToken } = require('./approval-state');
+const { statuses, snapshotPath, consumeApprovalToken: consumeToken, verificationStatus } = require('./approval-state');
 
 const SETS_APPROVED = /^status:\s*approved\s*$/m;
 const DESIGN_FILE = /(^|\/)documents\/design\/([^/]+)\/(intent|spec|plan)\.md$/;
-const REVIEW_FILE = /(^|\/)documents\/reviews\/(?!TEMPLATE)[^/]+\.md$/;
+const SETS_VERIFICATION_APPROVED = /^- \*\*Status:\*\*[ \t]*approved/m;
 const PREREQUISITE = { spec: 'intent', plan: 'spec' };
 
 let input;
@@ -56,7 +56,6 @@ if (input.tool_name === 'Bash') {
 }
 
 const designMatch = filePath.match(DESIGN_FILE);
-const isReview = REVIEW_FILE.test(filePath);
 
 if (designMatch) {
   const [, , feature, artifact] = designMatch;
@@ -66,11 +65,15 @@ if (designMatch) {
   }
 }
 
-if (designMatch || isReview) {
+if (designMatch) {
   const before = readIfExists(filePath);
   const after = toolInput.content ?? toolInput.new_string ?? '';
   const flipsToApproved = SETS_APPROVED.test(after) && !SETS_APPROVED.test(before);
-  if (flipsToApproved && !consumeApprovalToken()) {
-    deny('Approval gate: status can only become "approved" right after the user says so in chat (e.g. "approved"). Present the artifact, stop, and wait.');
+  const flipsVerification =
+    designMatch[3] === 'plan' &&
+    verificationStatus(before) !== 'approved' &&
+    (toolInput.content !== undefined ? verificationStatus(after) === 'approved' : SETS_VERIFICATION_APPROVED.test(after));
+  if ((flipsToApproved || flipsVerification) && !consumeApprovalToken()) {
+    deny('Approval gate: a status can only become "approved" right after the user says so in chat (e.g. "approved"). Present the artifact, stop, and wait.');
   }
 }
