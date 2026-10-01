@@ -17,11 +17,11 @@ describe('layerSlice', () => {
     expect(startLoading(state)).toEqual({ ...state, list: { status: 'loading' } })
   })
 
-  it('loadSucceeded stores the layers and makes the first layer active when none was', () => {
+  it('loadSucceeded stores the layers and makes all layers active when none was', () => {
     const next = loadSucceeded(startLoading(initialLayerState), TEST_LAYERS)
 
     expect(next.layers).toBe(TEST_LAYERS)
-    expect(next.activeLayerIds).toEqual(['temperature'])
+    expect(next.activeLayerIds).toEqual(['temperature', 'wind', 'insolation'])
     expect(next.list).toEqual({ status: 'success' })
   })
 
@@ -31,8 +31,8 @@ describe('layerSlice', () => {
     expect(next.activeLayerIds).toEqual(['wind', 'insolation'])
   })
 
-  it('loadSucceeded falls back to the first layer when no active id is known', () => {
-    expect(loadSucceeded(loadedWith(['gone']), TEST_LAYERS).activeLayerIds).toEqual(['temperature'])
+  it('loadSucceeded falls back to all layers when no active id is known', () => {
+    expect(loadSucceeded(loadedWith(['gone']), TEST_LAYERS).activeLayerIds).toEqual(['temperature', 'wind', 'insolation'])
   })
 
   it('loadSucceeded with an empty list leaves nothing active', () => {
@@ -50,8 +50,8 @@ describe('layerSlice', () => {
     const loaded = loadSucceeded(initialLayerState, TEST_LAYERS)
     const next = toggleLayer(loaded, 'wind')
 
-    expect(next.activeLayerIds).toEqual(['temperature', 'wind'])
+    expect(next.activeLayerIds).toEqual(['temperature', 'insolation'])
     expect(next.layers).toBe(loaded.layers)
-    expect(toggleLayer(next, 'temperature').activeLayerIds).toEqual(['wind'])
+    expect(toggleLayer(next, 'wind').activeLayerIds).toEqual(['temperature', 'insolation', 'wind'])
   })
 })

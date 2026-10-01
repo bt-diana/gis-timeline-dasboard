@@ -44,7 +44,7 @@ afterEach(() => {
 })
 
 describe('useLoadLayers', () => {
-  it('loads on mount: loading, then the layers with the first one active', async () => {
+  it('loads on mount: loading, then the layers with all of them active', async () => {
     const { responses } = queueResponses(1)
     const { result } = renderLoader()
 
@@ -60,7 +60,7 @@ describe('useLoadLayers', () => {
       expect(result.current.list).toEqual({ status: 'success' })
     })
     expect(result.current.layers).toEqual(TEST_LAYERS)
-    expect(result.current.activeLayerIds).toEqual(['temperature'])
+    expect(result.current.activeLayerIds).toEqual(['temperature', 'wind', 'insolation'])
   })
 
   it('shows the request error message, and a retry then succeeds', async () => {
@@ -114,7 +114,7 @@ describe('useLoadLayers', () => {
     })
 
     expect(result.current.layers).toEqual(secondList)
-    expect(result.current.activeLayerIds).toEqual(['wind'])
+    expect(result.current.activeLayerIds).toEqual(['wind', 'insolation'])
   })
 
   it('shows the fixed message for an error that is not an ApiRequestError', async () => {

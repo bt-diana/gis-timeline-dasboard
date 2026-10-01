@@ -25,8 +25,7 @@ export function startLoading(state: LayerState): LayerState {
 
 export function loadSucceeded(state: LayerState, layers: readonly LayerDefinition[]): LayerState {
   const knownActiveIds = layers.filter((layer) => state.activeLayerIds.includes(layer.id)).map((layer) => layer.id)
-  const firstLayer = layers.at(0)
-  const activeLayerIds = knownActiveIds.length > 0 || !firstLayer ? knownActiveIds : [firstLayer.id]
+  const activeLayerIds = knownActiveIds.length > 0 ? knownActiveIds : layers.map((layer) => layer.id)
   return { layers, activeLayerIds, list: { status: 'success' } }
 }
 

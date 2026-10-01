@@ -39,14 +39,14 @@ describe('App shell', () => {
     expect(within(header).getByRole('heading', { name: 'GIS Timeline Dashboard' })).toBeInTheDocument()
   })
 
-  it('shows loading, then a switch per loaded layer with the first one active', async () => {
+  it('shows loading, then a switch per loaded layer with all of them active', async () => {
     const { layer } = renderLandmarks()
 
     expect(within(layer).getByRole('status')).toHaveTextContent('Loading layers…')
 
     const switches = await within(layer).findAllByRole('switch')
     expect(switches.map((toggle) => toggle.textContent)).toEqual(['Temperature', 'Wind', 'Insolation'])
-    expect(switches.map((toggle) => toggle.getAttribute('aria-checked'))).toEqual(['true', 'false', 'false'])
+    expect(switches.map((toggle) => toggle.getAttribute('aria-checked'))).toEqual(['true', 'true', 'true'])
   })
 
   it('shows each loaded layer with its unit', async () => {
@@ -90,10 +90,10 @@ describe('App shell', () => {
         .map((toggle) => toggle.getAttribute('aria-checked'))
 
     await user.click(await within(layer).findByRole('switch', { name: 'Wind' }))
-    expect(checkedStates()).toEqual(['true', 'true', 'false'])
+    expect(checkedStates()).toEqual(['true', 'false', 'true'])
 
     await user.click(within(layer).getByRole('switch', { name: 'Wind' }))
-    expect(checkedStates()).toEqual(['true', 'false', 'false'])
+    expect(checkedStates()).toEqual(['true', 'true', 'true'])
   })
 
   it('shows the error and recovers with Retry', async () => {
