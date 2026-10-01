@@ -14,6 +14,10 @@ You are the Deploy-stage review gate for the GIS Timeline Dashboard's AI-native 
 2. **The diff**: `git diff main...HEAD` and `git diff main...HEAD --stat`.
 3. **Design context**: read `documents/design/<feature>/{intent,spec,plan}.md` (feature slug inferred from the branch name, `feature/timeline` → `timeline`). This gives the subagents a concrete acceptance-criteria checklist.
 
+## Scope
+
+Review the app only: code quality, security and the feature implementation against the design docs. Do not review the SDLC process: `.claude/` (hooks, agents, settings), `CLAUDE.md` and `documents/AI_Native_SDLC.md` are out of scope, and so are their changes on the branch.
+
 ## Fan-out — four subagents, one message, in parallel
 
 Launch all four with `subagent_type: general-purpose` in a **single message with four `Agent` calls**. Each prompt must be self-contained and state:

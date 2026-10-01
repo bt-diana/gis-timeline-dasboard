@@ -4,7 +4,8 @@
 // Deploy-stage governance for the AI-native SDLC: pushing `feature/<slug>`
 // requires the `## Verification` section of documents/design/<slug>/plan.md to
 // record the reviewed commit and the user's sign-off (`- **Status:** approved`),
-// and no file outside documents/ may have changed since the reviewed commit.
+// and no app file may have changed since the reviewed commit (documents/,
+// .claude/, CLAUDE.md and README.md may).
 // See documents/AI_Native_SDLC.md.
 //
 // Bypass: prefix the command with SDLC_SKIP_GATE=1.
@@ -93,10 +94,10 @@ if (git(['merge-base', '--is-ancestor', reviewed, 'HEAD'], root) === null) {
 
 const changedSinceReview = (git(['diff', '--name-only', reviewed, 'HEAD'], root) || '')
   .split('\n')
-  .filter((file) => file && !file.startsWith('documents/'));
+  .filter((file) => file && !file.startsWith('documents/') && !file.startsWith('.claude/') && !['CLAUDE.md', 'README.md'].includes(file));
 if (changedSinceReview.length > 0) {
   deny(
-    `files outside documents/ changed after the reviewed commit ${reviewed.slice(0, 7)}:\n` +
+    `app files changed after the reviewed commit ${reviewed.slice(0, 7)}:\n` +
     changedSinceReview.map((file) => `  - ${file}`).join('\n') +
     `\nRe-run the reviewer agent against HEAD.`
   );

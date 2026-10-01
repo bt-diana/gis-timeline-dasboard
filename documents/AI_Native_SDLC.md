@@ -70,7 +70,7 @@ Start from `documents/design/TEMPLATE/`. Before drafting `intent.md`, check `doc
 
 **Artifact:** the `## Verification` section of `documents/design/<feature>/plan.md` — the checks run and the consolidated findings from the `reviewer` agent (`.claude/agents/reviewer.md`), then an up-to-date `README.md`, then the PR.
 
-The `reviewer` agent fans out to four parallel, independent subagents:
+The `reviewer` agent reviews the app only (code quality, security, the feature implementation), not the SDLC process files in `.claude/`, `CLAUDE.md` and this document. It fans out to four parallel, independent subagents:
 
 | Lens | Looks for |
 |---|---|
@@ -81,7 +81,7 @@ The `reviewer` agent fans out to four parallel, independent subagents:
 
 The Verification section records the exact commit reviewed and its approval state (`- **Reviewed commit:** \`<sha>\`` and `- **Status:** draft`); its structure is in `documents/design/TEMPLATE/plan.md`. There is no separate review file.
 
-After the reviewer writes it, the agent walks the user through findings and proposes a resolution for each (fixed / deferred / accepted, with rationale). Fixes are applied only as the user approves; then the user approves the section (`- **Status:** approved`). Committing the plan after the review is fine: the push gate only requires that no file outside `documents/` changed since the reviewed commit. Re-run the reviewer when code changes.
+After the reviewer writes it, the agent walks the user through findings and proposes a resolution for each (fixed / deferred / accepted, with rationale). Fixes are applied only as the user approves; then the user approves the section (`- **Status:** approved`). Committing the plan after the review is fine: the push gate only requires that no app file changed since the reviewed commit (`documents/`, `.claude/`, `CLAUDE.md` and `README.md` may). Re-run the reviewer when code changes.
 
 Then refresh `README.md` (features checklist, architecture, scripts, stack, and the trade-offs / AI-usage sections assembled from the approved Decisions entries) against what the feature actually shipped — or state explicitly that nothing changed. **Get approval**, commit on the feature branch, and only then push. When the user commands a push, the agent also opens the PR against `main` and writes its description (intent, key decisions, test coverage, review findings and resolutions, what to verify by hand). Commits authored by Claude carry no `Co-Authored-By` trailer; commits under the user's git identity name Claude as co-author through that trailer. Never push or open a PR unprompted. Merging the PR remains a human action.
 
@@ -93,7 +93,7 @@ Then refresh `README.md` (features checklist, architecture, scripts, stack, and 
 
 Claude Code `PreToolUse` hooks (`.claude/settings.json`, scripts in `.claude/hooks/`):
 
-- **`review-gate.js`** — blocks `git push` of `feature/<slug>` unless the `## Verification` section of `documents/design/<slug>/plan.md` names a reviewed commit in the branch history, no file outside `documents/` changed since it, and the section's Status is `approved`.
+- **`review-gate.js`** — blocks `git push` of `feature/<slug>` unless the `## Verification` section of `documents/design/<slug>/plan.md` names a reviewed commit in the branch history, no app file changed since it (`documents/`, `.claude/`, `CLAUDE.md` and `README.md` may), and the section's Status is `approved`.
 - **`approval-gate.js`** — on Write and Edit: blocks setting `status: approved` in a design or review artifact unless the user's last message approved it (token written by `approval-record.js` on `UserPromptSubmit`). On Bash it records every artifact's status before the command; the `PostToolUse` hook **`approval-bash-check.js`** compares them after it and puts back any status that became `approved` without the user's approval.
 
 There is no commit gate: anything may be committed, drafts included. `review-gate.js` accepts a deliberate bypass: prefix the command with `SDLC_SKIP_GATE=1`. It exists so a misfiring gate doesn't block real work, not as a routine escape; if you reach for it often, fix the gate.
