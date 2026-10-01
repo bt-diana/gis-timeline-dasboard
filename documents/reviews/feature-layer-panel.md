@@ -1,89 +1,86 @@
 ---
-commit: 5930c1282c5891140f3ed0a8c35362a7b78bff43
+commit: 49cafdbdaed7d16042e3fa5dbec23625e2121489
 status: draft
 ---
 
 # Review — feature/layer-panel
 
-Consolidated findings from the `reviewer` agent, one pass per lens. The subagent tool was not available in this run, so the reviewer ran the four lenses one after another instead of in parallel. Scope: `git diff origin/main...HEAD` at `5930c12`, focused on the fixes since the previous review: `dc804a5` (code) and `5930c12` (plan revision 5, draft). The rest of the branch was covered by the previous review at `d4250fa`. That commit no longer exists after the history rewrite and the rebase onto `origin/main`, but the reviewed code did not change. New finding IDs continue from the previous review's IDs (CQ-7, TC-6), so earlier IDs keep their meaning.
+Consolidated findings from the `reviewer` agent, one pass per lens. The subagent tool was not available in this run, so the reviewer ran the four lenses one after another instead of in parallel. Scope: `git diff origin/main...HEAD` at `49cafdb`, focused on the changes since the previous review at `5930c12`: `e800b36` (fixes on custom store hooks), `97a1065` (Vedro hooks restored), and the plan commits through `49cafdb` (plan rev 5 approved, store-hook decisions merged into PLAN-14). The source code is the same at `6add5d6` and `49cafdb`. The rest of the branch was covered by the earlier reviews. New finding IDs continue from the previous ones, so earlier IDs keep their meaning.
 
-Design basis: intent rev 3 (approved), spec rev 3 (approved), plan rev 5 (**draft**, awaiting approval; adds PLAN-14, PLAN-15, PLAN-16).
+Design basis: intent rev 3, spec rev 3, plan rev 5 (all approved). Active decisions: PLAN-5, PLAN-7, PLAN-12, PLAN-13, PLAN-14 ("Vedro's hooks are used as is").
 
-Checked by the reviewer at `5930c12`:
+Accepted trade-offs, not raised as findings (PLAN-14 and the plan's Design section): Vedro's `useSelector` misses writes made before it subscribes, so selectors are called before `useLoadLayers()`; it compares selector results with `JSON.stringify` on every write; `useDispatch` changes identity on every render, so features call `dispatch` on the store from `useStore()`. Exporting the raw store and Vedro's unguarded unsubscribe are also treated as accepted, as the user directed. PLAN-14's trade-off text does not name these two explicitly; they follow from its decision to use `useStore`.
 
-- `npm run verify` passes: typecheck, lint, 12 test files, 61 tests.
-- `npm run build` succeeds; `dist` holds only `index.html`, one JS and one CSS asset. In `dist`, `grep -i` finds no `msw`, `mockServiceWorker`, `QaControl`, `qa-control`, `Fail API requests` or `qa:fail-api`. One dev-only log string is still there (CQ-9). `dist` was deleted afterwards; the working tree is clean.
-- `useAppStoreSelector` / `useAppDispatch` (PLAN-14), checked against the Vedro 1.1.0 source (`lib/_Vedro.js`, `lib/_internal/_Notifier.js`, `lib/_internal/_Dispatcher.js`, `lib/_internal/_DTO.js`, `lib/_createVedro.js`):
-  - **Subscription.** `store.on('@state', cb)` → `Notifier.onState` calls `cb(state, state, INIT)` synchronously, then pushes `cb` and returns an unsubscribe. With `useSyncExternalStore`, `cb` is React's per-subscription `handleStoreChange`. That callback only re-renders if the snapshot changed, so the INIT call costs one `getSnapshot` call and is harmless. It is also useful: it catches a write made between render and subscribe. `subscribe` is memoised on `[store]`, so React does not resubscribe on every render.
-  - **Unsubscription.** Vedro's unsubscribe is `splice(indexOf(cb), 1)` with no `-1` guard. React calls each subscription's destroy exactly once, and every `handleStoreChange` is a distinct function, so the right entry is removed. Calling it a second time would remove the last subscriber instead (see CQ-8).
-  - **Stable snapshot.** `store.get()` returns a new shallow copy of the root (`DTO.getState` → `{...state}`), so returning the root would loop. Every selector in the codebase (`selectors.ts:6,10,14`, `appStore.test.tsx:28,44`) returns a nested reference (`layer.layers`, `layer.activeLayerIds`, `layer.list`). These are stable between dispatches, because the `layer` object is copied by reference. No render loop.
-  - **Reference stability across transitions.** `startLoading`, `loadFailed` and `toggleLayer` spread `state`, so `layers` keeps its reference; only `loadSucceeded` sets a new `layers` array. `useTimelineRange`'s `useMemo([layers])` therefore recomputes only on a successful load. A probe (scratchpad, not committed) confirmed that after a toggle wrapped in `act`, `layers` is the same reference and `activeLayerIds` updates.
-  - **Writes before subscribe.** Vedro dispatches synchronously and notifies `@state` subscribers before key subscribers. A write made in a child mount effect, before the parent's subscribe effect, is picked up by React's post-subscribe snapshot check and by the INIT call. `appStore.test.tsx:19-40` covers this case.
-  - **StrictMode.** The Provider's `useRef(new Vedro(...))` may build a spare store on the double render, but only the committed one reaches the context. Effect double-invocation unsubscribes and resubscribes with distinct callbacks. `useAppDispatch` is stable, so `load` is stable and `useLoadLayers` runs its effect once per (strict) mount: the first request is aborted and the second writes. `App.test.tsx:70-82` covers this.
-  - **Dispatch.** `useAppDispatch` is `useCallback` on `[store]`, so it is stable for the life of the provider (`appStore.test.tsx:10-17`). Sync updaters go through `dispatchWithCB`; none of the updaters is `async`.
-- `src/main.tsx`: `startDevMocks().catch(log).then(render)` renders whether or not `worker.start()` rejects. In production `startDevMocks` returns at once and the `browser` import is dropped. `src/shared/lib/isRecord.ts` is the only `isRecord` in `src`; `shared/api/apiError.ts` imports it relatively and `entities/layer/model/guards.ts` through `@shared/lib`.
+Checked by the reviewer at `49cafdb`:
+
+- `npm run verify` passes: typecheck, lint, 11 test files, 58 tests. Three fewer than at `5930c12`, because `97a1065` removed `appStore.test.tsx`.
+- `npm run build` succeeds. `dist` holds only `index.html`, one JS and one CSS asset. `grep -i` in `dist` finds no `msw`, `QaControl`, `qa-control`, `mockServiceWorker`, `Dev API mocks` or `Fail API requests`. `dist` was deleted afterwards, and the working tree is clean.
+- `src/shared/store/appStore.ts` is identical to its rev-4 form at `e3563ed`: it re-exports Vedro's `Context`, `Provider`, `useStore`, `useSelector` and `useDispatch` unchanged. That matches the plan file map (`plan.md:59`).
+- Vedro 1.1.0 source (`lib/_createVedro.js`, `lib/hooks/useStoreSelector.hook.js`, `lib/_internal/_Notifier.js`):
+  - `useSelector` keeps its value in `useState(cb(store.get()))` and subscribes in a `[]`-deps effect. The `@state` INIT callback compares `cb(state)` with itself, so it never recovers a missed write. Later writes compare `cb(prevState)` with `cb(state)` by `JSON.stringify`.
+  - `useStore` reads the context and returns the store from the Provider's `useRef`, which is stable. `useDispatch` returns `store.dispatch.bind(store)`, a new function on every render. This confirms the plan's Design note (`plan.md:72`).
+- Hook order (`plan.md:71`):
+  - `ConnectedLayerPanel.tsx:7-11` calls `useLayers`, `useActiveLayerIds` and `useLayerList` before `useToggleLayer` and `useLoadLayers`. Effects run in call order, so the selectors subscribe before the load's mount effect writes `loading`.
+  - `useLoadLayers.test.tsx:32-36` uses the same order. Its `Probe` in `:155-165` renders before `Loader`, so sibling effects subscribe first.
+  - No other component in `src` reads the store.
+  - Under StrictMode the reconnect runs the effects in the same order, so the second load's `loading` write is seen as well.
+- Hook-order probe, in a scratch copy that was not committed:
+  - Moving `useLoadLayers()` first in `ConnectedLayerPanel` leaves all 58 tests passing. The panel stays `idle` until the load settles, and `idle` renders exactly like `loading` (`LayerPanel.tsx:49`, plan Design note). The order in the connected widget therefore has no observable effect today.
+  - Moving it first in the `useLoadLayers.test.tsx` harness fails two tests (`expected { status: 'idle' } to deeply equal { status: 'loading' }`). So the rule is pinned where it can be observed.
+- `useLoadLayers.ts:7,27` and `useToggleLayer.ts:6,12` depend only on `store`. `load` and the toggle callback are therefore stable for the life of the provider. `useLoadLayers`' mount effect runs once per (strict) mount, and `App.test.tsx:70-82` still covers the StrictMode double mount. Abort and latest-wins logic is unchanged from the reviewed revision.
+- `src/main.tsx:5-13`: the `try/catch` around the mocks import and `worker.start()` sits after the `DEV` early return. The production build drops it, and the app renders whether or not the worker starts.
 
 ## Previous findings
 
-| ID | Finding (at `d4250fa`) | Status at `5930c12` | Evidence |
+| ID | Finding (at `5930c12`) | Status at `49cafdb` | Evidence |
 |---|---|---|---|
-| CQ-1 | Two ways to get dispatch; `useAppStoreDispatch` unstable | Fixed | `appStore.ts:28-35` stable `useAppDispatch`, used by `useLoadLayers.ts:7` and `useToggleLayer.ts:6`; plan Design note and PLAN-14 (draft) |
-| CQ-2 | `idle` rendered as loading without a Decision | Fixed (decision in draft) | PLAN-15 in plan rev 5 (draft); `LayerPanel.tsx:49` unchanged |
-| CQ-3 | Hook-order constraint in `ConnectedLayerPanel` | Fixed | `useSyncExternalStore` reads the current value at subscribe, so hook order no longer matters; the plan's ordering note was removed |
-| CQ-4 | `sessionStorage` persistence and `MODE !== 'test'` guard unrecorded | Fixed (decision in draft) | PLAN-16 in plan rev 5 (draft) |
-| CQ-5 | `main.tsx` never renders if `worker.start()` rejects | Fixed | `main.tsx:22-28`; plan by-hand check "worker script missing" ticked (not re-run by the reviewer) |
-| CQ-6 | `isRecord` duplicated | Fixed | `src/shared/lib/isRecord.ts`, the only definition |
-| TC-1 | No StrictMode double-mount test | Fixed | `App.test.tsx:70-82` asserts two calls, first signal aborted, list shown once. The late arrival of an aborted response is covered by `useLoadLayers.test.tsx:87-113` |
-| TC-2 | No test guards selector-before-loader order | Fixed | `appStore.test.tsx:19-40` (write in a child mount effect before the reader subscribes) |
-| TC-3 | Long-name wrap untested and dropped from the by-hand list | Fixed | Restored and ticked in the plan's by-hand list (`plan.md` test plan); CSS-only, not re-run by the reviewer |
-| TC-4 | App test omits units; empty list not tested through the loader | Fixed | `App.test.tsx:52-60` (units), `:62-68` (`fetchLayers` → `[]`) |
-| TC-5 | Non-`ApiRequestError` fallback untested | Fixed | `useLoadLayers.test.tsx:115-127` |
-| PE-1 | Vedro selectors `JSON.stringify` the list on every dispatch | Fixed | Vedro `useSelector` is no longer used; `useSyncExternalStore` compares with `Object.is` |
+| CQ-7 | Code relied on decisions in the draft plan rev 5; duplicate `main.tsx` file-map row | Fixed | Plan rev 5 is `status: approved`. All Decisions entries the code relies on are active (PLAN-5, -7, -12, -13, -14). `idle` as loading and the `sessionStorage` switch are recorded as Design notes (`plan.md:73-74`). `src/main.tsx` appears once in the file map (`plan.md:53`). |
+| CQ-8 | Reference-only selector contract and exported raw store relied on convention | Fixed in `e800b36`, then the fix was removed by `97a1065` (PLAN-14); no longer applies | (a) The custom `useSyncExternalStore` selector is gone. Vedro's `useSelector` stores its value in `useState` and compares with `JSON.stringify`, so a selector returning a new object cannot cause a render loop. (b) The raw store is exported again (`appStore.ts:13,15`) as part of using Vedro's hooks as is; accepted under PLAN-14. |
+| CQ-9 | Dev-only `.catch` and its log message in the production bundle | Fixed | `main.tsx:7-12` (catch inside the `DEV` branch); `dist` grep finds no `Dev API mocks` |
+| TC-6 | `appStore.test.tsx` dispatched outside `act`; no unsubscribe test | Fixed in `e800b36`, then the test file was removed by `97a1065` (PLAN-14); no longer applies | No custom store code is left to test; selector, dispatch and subscription behaviour is Vedro's own |
 
 ## Security
 
-No findings. `dc804a5` adds no new rendering of data as HTML. The new `console.error` in `main.tsx` logs only the local worker start error. The production bundle has no MSW or QA control code.
+No findings. The changes since `5930c12` add no rendering of data as HTML, and `src` has no `innerHTML` or `dangerouslySetInnerHTML`. The only log in `main.tsx` is dev-only and absent from `dist`. The production bundle contains no MSW, worker script or QA control code. No dependencies changed.
 
 ## Code Quality & Maintainability
 
-- **CQ-7 (minor, process)** `src/shared/store/appStore.ts:21-35`, `src/widgets/layer-panel/ui/LayerPanel.tsx:49`, `src/app/App.tsx:10`: the code relies on decisions that exist only in the **draft** plan rev 5. PLAN-14 (replacing Vedro's `useSelector`/`useDispatch`) is a new architectural choice; PLAN-15 and PLAN-16 record existing behaviour. PLAN-14's own AI-involvement line says "awaiting the user's approval", yet all three entries are marked `Status: active` in an unapproved plan. Also, the plan's file map lists `src/main.tsx` twice (lines 53 and 61). Fix: get plan rev 5 approved before this review is approved, or revert to the rev 4 approach if PLAN-14 is rejected. Merge the two `main.tsx` rows.
-- **CQ-8 (minor)** `src/shared/store/appStore.ts:15-24`: two safety properties of the new hooks depend on convention only.
-  - (a) A selector must return a stored reference. `store.get()` builds a new root object on every call, so a selector such as `s => s`, `s => ({ ... })` or `s => s.layer.layers.filter(...)` makes `useSyncExternalStore` loop: React warns "getSnapshot should be cached", then throws "Maximum update depth exceeded". This is written in PLAN-14's trade-off, but nothing in `appStore.ts` stops it, and later tasks (time selection, chart series) will add selectors.
-  - (b) `useAppStore` (the raw Vedro store) is still exported. A direct `store.on(...)` caller that unsubscribes twice would hit Vedro's unguarded `splice(indexOf(cb), 1)` and silently remove another component's subscription.
+- **CQ-10 (minor, process)** `documents/design/layer-panel/plan.md:141-148`: decision PLAN-14 was rewritten in place. Until `87e0be2`, PLAN-14 recorded the rejected `useSyncExternalStore` replacement (`Status: superseded by PLAN-15`) and PLAN-15 recorded "Vedro's hooks are used as is". After `49cafdb`, PLAN-14 holds the opposite decision and PLAN-15 is gone. The SDLC requires decisions to be append-only, never edited or deleted, and a rejected proposal to be recorded as its own superseded entry (`documents/AI_Native_SDLC.md:42-43`, `documents/design/TEMPLATE/plan.md:26`). The rejected proposal survives in PLAN-14's Options and AI involvement lines, so the current plan loses no information. But the ID PLAN-14 now means opposite things in history: commit `e800b36` and the review draft `a2e9db9` cite PLAN-14 for the custom hooks. The README's AI-usage section is meant to draw rejected proposals from superseded entries (`AI_Native_SDLC.md:44`). The user directed the merge. Fix: either accept it as the user's choice and record that here as a REV decision, or restore the superseded entry for the rejected proposal under its own ID and keep "used as is" under a new ID.
 
-  Fix: stop exporting `useAppStore`/`AppStoreContext` from `appStore.ts` (no caller outside the file uses them). Optionally, add a dev-only check in `useAppStoreSelector` that `select` returns `Object.is`-equal values for two `get()` calls. Or accept as-is and rely on React's dev warning.
-- **CQ-9 (minor)** `src/main.tsx:23-25`: the production bundle still contains the `.catch` handler and its message "Dev API mocks failed to start; the app runs without them." In production `startDevMocks` never rejects, so this is dead code. The message is also misleading if it ever appears in a production build log. Fix: put the catch inside `startDevMocks` (after the `DEV` early return), for example `await worker.start(...).catch(...)`, so the whole branch is removed in production.
+Decisions check:
 
-Decisions check: the other non-obvious choices in `dc804a5` map to recorded decisions or Design notes: PLAN-14 (store hooks), PLAN-15 (idle as loading), PLAN-16 (session switch, QA control off in tests), and the file-map rows for `main.tsx` fallback and `shared/lib/isRecord`. The code does not contradict any recorded decision. The Design notes on abort detection, latest-wins and StrictMode still match `useLoadLayers.ts`.
+- The code follows every active decision and Design note. Specifically:
+  - one Vedro store with one `layer` key, every transition returning the whole key (PLAN-5);
+  - Vedro hooks used as is, with custom hooks only adding logic (PLAN-14: `useLoadLayers`, `useToggleLayer`, and the selector hooks in `entities/layer/model/selectors.ts`, which wrap `useSelector`);
+  - selectors before `useLoadLayers()` (`ConnectedLayerPanel.tsx:7-11`);
+  - `dispatch` called on the store from `useStore()`;
+  - mocks and test helpers in `shared` (PLAN-12);
+  - plain `fetch` (PLAN-13).
+- `useAppStoreDispatch` (`appStore.ts:17`) is exported but has no caller, consistent with the Design note that features avoid it. It stays because the file map lists Vedro's exports as is.
+- No non-obvious choice in the code since `5930c12` lacks a record.
 
 ## Test Coverage & Correctness
 
-Acceptance criteria against tests (changes since the previous review only):
+No new findings. Changes since `5930c12`:
 
-| Criterion | Test |
+| Item | Test |
 |---|---|
-| Mocked load shows loading, then three switches with names, units, first active | `App.test.tsx:42-50`, `:52-60` |
-| Empty list shows the empty state | `App.test.tsx:62-68` (through the loader), `LayerPanel.test.tsx`, `layerSlice.test.ts` |
-| StrictMode double mount (spec edge case) | `App.test.tsx:70-82` |
-| Non-`ApiError` failure shows the fixed message | `useLoadLayers.test.tsx:115-127`, `request.test.ts` |
-| `npm run verify` passes | Verified by the reviewer (61 tests) |
+| Selectors before the loader, as the plan's Design note requires | `useLoadLayers.test.tsx:32-36`, `:155-165`. The probe confirms the harness fails if the order is swapped. |
+| StrictMode double mount with the store-based dispatch | `App.test.tsx:70-82` |
+| Loading, success, error with Retry, latest-wins, discarded superseded failure, unmount writes nothing | `useLoadLayers.test.tsx:47-177`, `App.test.tsx:42-109` |
+| `npm run verify` passes | Verified by the reviewer (58 tests) |
 
-Every spec acceptance criterion and edge case now has a test or a ticked by-hand check.
-
-- **TC-6 (minor)** `src/shared/store/appStore.test.tsx:42-52`: the test "a selector keeps its value when another part of the store changes" proves nothing. `dispatch` is called outside `act`, so React does not re-render before the assertion and `result.current` is still the first render's value. The assertion would pass even if the selector returned a new array on every write. A scratchpad probe confirmed it: 0 re-renders after the un-`act`ed dispatch, plus an "update … not wrapped in act(...)" warning. There is also no hook-level test that a selector updates after a dispatch, or that unmount unsubscribes; the App tests cover the first only indirectly. Fix: wrap the dispatch in `act`, also select `activeLayerIds` and assert that it became `['wind']` (so the re-render is proven) while `layers` keeps its reference. Add a case that unmounts one of two readers, dispatches, and checks that the remaining reader still updates. That guards the Vedro `splice` path.
+Every spec acceptance criterion and edge case still has a test or a ticked by-hand check. The three removed `appStore.test.tsx` tests covered only the custom hooks that PLAN-14 removed. Note: the hook order inside `ConnectedLayerPanel` has no observable effect today, because `idle` renders as `loading`. The first widget that tells `idle` and `loading` apart, or reads the store from a parent or a later sibling of the panel, will depend on the accepted selector-timing trade-off.
 
 ## Performance & Efficiency
 
-No findings. Each dispatch now costs one `store.get()` shallow copy (one key) and one `Object.is` per subscribed selector. The `JSON.stringify` per selector is gone (PE-1). `useTimelineRange` recomputes only when `layers` changes reference, which happens only on `loadSucceeded`. `onToggleLayer` and `onRetry` are now stable across renders, so a future `memo` on the panel or its rows would work.
+No findings beyond the accepted `JSON.stringify` comparison (PLAN-14). Each dispatch runs three selectors, each stringifying its previous and new result. At three layers this is negligible. `useTimelineRange`'s `useMemo([layers])` recomputes only when the `layers` selector's state changes, which happens only when the list content changes. `load` and the toggle callback are stable, so the mount effect does not re-run and a future `memo` on the panel would work.
 
 ## Resolution
 
 | ID | Severity | Finding | Resolution | AI involvement |
 |---|---|---|---|---|
-| CQ-7 | minor | Code relies on PLAN-14/15/16, which are only in the draft plan rev 5; duplicate `main.tsx` file-map row | TODO | TODO |
-| CQ-8 | minor | Reference-only selector contract and the exported raw store rely on convention (render loop / Vedro double-unsubscribe risk) | TODO | TODO |
-| CQ-9 | minor | Dev-only `.catch` and its log message remain in the production bundle | TODO | TODO |
-| TC-6 | minor | `appStore.test.tsx:42-52` dispatches outside `act`, so it proves nothing; no unsubscribe test | TODO | TODO |
+| CQ-10 | minor | PLAN-14 rewritten in place and PLAN-15 deleted, against the append-only decision rule; PLAN-14 means opposite things in history | TODO | TODO |
 
 ## Decisions
 
