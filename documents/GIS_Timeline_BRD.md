@@ -4,7 +4,7 @@ status: approved
 
 # Business Requirements — GIS Timeline Dashboard
 
-Source: the test assignment (`.claude/Тестовое задание.pdf`), plus the author's own requirements (§3.2, IDs `AR-xxx`). Requirement IDs (`BR-xxx` from the assignment, `AR-xxx` from the author) are referenced from `documents/design/<feature>/intent.md` and `spec.md`.
+Source: the test assignment, plus the author's own requirements (§3.2, IDs `AR-xxx`). Requirement IDs (`BR-xxx` from the assignment, `AR-xxx` from the author) are referenced from `documents/design/<feature>/intent.md` and `spec.md`.
 
 ## 1. Purpose
 
