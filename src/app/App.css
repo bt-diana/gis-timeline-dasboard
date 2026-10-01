@@ -46,6 +46,7 @@ body {
 
 .shell-layer {
   grid-area: layer;
+  min-height: 0;
 }
 
 .workspace {

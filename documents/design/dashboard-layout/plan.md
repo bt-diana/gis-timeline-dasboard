@@ -1,5 +1,6 @@
 ---
 status: approved
+revision: 2
 ---
 
 # Plan — Dashboard Layout
@@ -89,7 +90,7 @@ Every acceptance criterion in `spec.md` maps to a test. jsdom does not apply lay
 
 ### PLAN-1 — Feature import boundaries are enforced by ESLint
 
-- **Status:** active
+- **Status:** superseded by layer-panel INT-4 (ESLint now enforces FSD layer and slice boundaries)
 - **Decision:** Rules against imports between `src/features/<feature>/` folders are defined in `eslint.config.js` with `no-restricted-imports`. There is no test that scans source files.
 - **Options considered:** A test reading source files and checking their imports; an ESLint rule.
 - **Why:** The user wants import rules defined in lint, where they fail in the editor and in `npm run lint` and cover features added later.
@@ -107,7 +108,7 @@ Every acceptance criterion in `spec.md` maps to a test. jsdom does not apply lay
 
 ### PLAN-3 — The design gate is extended to cover the stub folders
 
-- **Status:** active
+- **Status:** superseded (the stubs moved to `src/widgets/`; the design gate was removed in the layer-panel task)
 - **Decision:** `design-gate.js` is extended so commits touching `src/features/header/`, `layer/`, `map/` and `chart/` are checked against `documents/design/dashboard-layout/` instead of a same-named design folder. The four folders are not nested under `src/features/dashboard-layout/`.
 - **Options considered:** Nest the four folders under `src/features/dashboard-layout/`; extend the gate; bypass with `SDLC_SKIP_GATE=1`.
 - **Why:** The user wants the feature folders kept as planned, matching TRD §7 and TR-61, and the gate adapted to them.

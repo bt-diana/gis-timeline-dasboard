@@ -1,5 +1,6 @@
 ---
 status: approved
+revision: 2
 ---
 
 # Technical Requirements — GIS Timeline Dashboard
@@ -85,7 +86,8 @@ The code must make these responsibilities separable and locatable (Assignment: a
 | ID | Requirement |
 |---|---|
 | TR-60 | Dependencies point one way: UI → state → data access; map and analytics read state, and data access knows nothing about the UI. |
-| TR-61 | Code is grouped by feature under `src/features/<feature>/`, with shared code in `src/shared/`. |
+
+The folder layout is not fixed by the assignment; it is chosen in layer-panel INT-4 (Feature-Sliced Design).
 
 ## 8. Performance and scalability
 
@@ -105,7 +107,7 @@ Each is settled in the `## Decisions` section of the first feature's design arti
 | Decision | Options / notes |
 |---|---|
 | Map library | Mapbox GL JS (needs access token), MapLibre GL JS (open source, no token, WebGL, good for 3D via layers), Google Maps, OpenLayers. Justified in README (BR-12). |
-| Vedro API and store shape | Confirm the package's API before designing the store; one store vs. several slices. |
+| Vedro API and store shape | Confirm the package's API before designing the store; one store vs. several slices. Settled in the layer-panel plan (layer-panel INT-3). |
 | Build tooling | Not specified by the assignment or README (e.g. Vite); needs the user's approval as a new dependency. |
 | Test runner | Not specified; needed for TDD in the SDLC. Needs approval as a new dependency. |
 | Layer rendering kinds | Which of GeoJSON / raster / polygons / points / heatmap is used for each of the 3 layers. |

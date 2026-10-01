@@ -10,12 +10,14 @@ export default defineConfig({
     alias: {
       '@features': src('./src/features'),
       '@shared': src('./src/shared'),
+      '@widgets': src('./src/widgets'),
+      '@entities': src('./src/entities'),
     },
   },
   test: {
     environment: 'jsdom',
     globals: true,
-    setupFiles: ['./src/test/setup.ts'],
+    setupFiles: ['./src/shared/test/setup.ts'],
     css: false,
   },
 })

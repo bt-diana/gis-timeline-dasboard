@@ -6,11 +6,13 @@ Feature work, bug fixes and reviews go through the project agents in `.claude/ag
 - `implementer` — tests first, then code, then review, README and PR; one stop each.
 - `reviewer` — Deploy-stage review gate; launched by `implementer` after the user accepts the implementation.
 
-Enforced by hooks in `.claude/hooks/`: design-artifact approval before feature commits, review approval before push, commit-message format, no comments in `src`. Hook blocked something: fix the cause, never bypass unless the user says so.
+Enforced by hooks in `.claude/hooks/`: artifact approval only after the user says so, review approval before push, commit-message format, no comments in `src`. Hook blocked something: fix the cause, never bypass unless the user says so.
 
 Non-negotiable:
 - Stop for user approval after every artifact; never set `status: approved` yourself.
 - Never push or open a PR unless the user commands it.
-- Commits: user's git identity, one-line subject plus the Co-Authored-By trailer, no body. Commit only when allowed.
+- Commits: one-line subject, no body. Commits authored by Claude carry no Co-Authored-By trailer; commits under the user's identity end with it. Commit only when allowed.
+- Keep it simple (KISS, YAGNI): no over-engineering, no speculative hardening. Not every review finding gets fixed; fix what matters, accept the rest with a reason.
+- Tests cover only their own unit: mock child components as `data-testid` stubs and check they render; don't re-test what a dependency's own tests cover.
 - No code comments; rationale lives in design docs.
 - `npm run verify` before presenting an implementation.

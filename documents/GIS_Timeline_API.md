@@ -4,7 +4,7 @@ status: approved
 
 # Mock API Contract — GIS Timeline Dashboard
 
-Served by MSW (TR-05). All bodies are JSON; times are ISO 8601 UTC strings. Implements TR-20, TR-22, TR-23, TR-30, TR-31, TR-33, TR-70.
+Served by MSW (TR-05) in every build, including the deployed demo; there is no real backend (layer-panel SPEC-7). All bodies are JSON; times are ISO 8601 UTC strings. Implements TR-20, TR-22, TR-23, TR-30, TR-31, TR-33, TR-70.
 
 ## Types
 
@@ -77,7 +77,7 @@ The UI shows `error.message` only, never the raw response (TR-30).
 
 - Latency: every response is delayed 300–1500 ms at random, so responses can arrive out of order (TR-33).
 - Cancellation: callers pass an `AbortSignal`; a superseded request is aborted and its result discarded (TR-31).
-- Failure injection: a test-only switch makes a chosen layer return `500`, used by the loading/error tests and the demo.
+- Tests mock the request functions instead of using MSW (layer-panel SPEC-7); the error states are covered there.
 
 ## Open points
 

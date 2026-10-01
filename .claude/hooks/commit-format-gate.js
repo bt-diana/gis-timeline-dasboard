@@ -1,5 +1,7 @@
 const fs = require('node:fs');
+const { execSync } = require('node:child_process');
 
+const CLAUDE_EMAIL = 'noreply@anthropic.com';
 const TRAILER = /^Co-Authored-By: .+ <.+>$/i;
 
 function readStdin() {
@@ -48,9 +50,24 @@ const content = lines.map((l) => l.trim()).filter(Boolean);
 const body = content.filter((l, i) => i > 0 && !TRAILER.test(l));
 const hasTrailer = content.some((l) => TRAILER.test(l));
 
-if (body.length > 0) {
-  deny('Commit message must be a one-line subject plus the Co-Authored-By trailer, no body. Move rationale into the design docs.');
+function authorEmail() {
+  const fromCommand = command.match(/\buser\.email=("[^"]*"|'[^']*'|\S+)/);
+  if (fromCommand) return fromCommand[1].replace(/^['"]|['"]$/g, '');
+  try {
+    return execSync('git var GIT_AUTHOR_IDENT', { encoding: 'utf8', cwd: input.cwd || process.cwd() }).match(/<([^>]*)>/)?.[1] || '';
+  } catch {
+    return '';
+  }
 }
-if (!hasTrailer) {
-  deny('Commit message must end with the Co-Authored-By trailer given in the session attribution reminder.');
+
+const claudeIsAuthor = authorEmail() === CLAUDE_EMAIL;
+
+if (body.length > 0) {
+  deny('Commit message must be a one-line subject, plus the Co-Authored-By trailer when the user is the author; no body. Move rationale into the design docs.');
+}
+if (claudeIsAuthor && hasTrailer) {
+  deny('Claude is the author of this commit, so it carries no Co-Authored-By trailer.');
+}
+if (!claudeIsAuthor && !hasTrailer) {
+  deny('A commit authored by the user must end with the Co-Authored-By trailer given in the session attribution reminder.');
 }

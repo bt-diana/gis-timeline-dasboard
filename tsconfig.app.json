@@ -25,7 +25,9 @@
     "forceConsistentCasingInFileNames": true,
     "paths": {
       "@features/*": ["./src/features/*"],
-      "@shared/*": ["./src/shared/*"]
+      "@shared/*": ["./src/shared/*"],
+      "@widgets/*": ["./src/widgets/*"],
+      "@entities/*": ["./src/entities/*"]
     }
   },
   "include": ["src"]

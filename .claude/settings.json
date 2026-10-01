@@ -6,12 +6,6 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node .claude/hooks/design-gate.js",
-            "if": "Bash(git commit*)",
-            "statusMessage": "Checking design artifacts (AI-native SDLC gate)..."
-          },
-          {
-            "type": "command",
             "command": "node .claude/hooks/commit-format-gate.js",
             "if": "Bash(git commit*)",
             "statusMessage": "Checking commit message format..."
@@ -21,6 +15,11 @@
             "command": "node .claude/hooks/review-gate.js",
             "if": "Bash(git push*)",
             "statusMessage": "Checking review artifact (AI-native SDLC gate)..."
+          },
+          {
+            "type": "command",
+            "command": "node .claude/hooks/approval-gate.js",
+            "statusMessage": "Recording artifact approval state..."
           }
         ]
       },
@@ -36,6 +35,18 @@
             "type": "command",
             "command": "node .claude/hooks/no-comments-gate.js",
             "statusMessage": "Checking for code comments..."
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node .claude/hooks/approval-bash-check.js",
+            "statusMessage": "Checking artifact approval..."
           }
         ]
       }

@@ -1,33 +1,24 @@
 ---
-status: draft
+status: approved
 ---
 
 # Roadmap — GIS Timeline Dashboard
 
 Task list derived from `GIS_Timeline_BRD.md`, `GIS_Timeline_TRD.md` and `GIS_Timeline_API.md`. Each task is one feature and goes through intent → spec → plan → tests → code → review.
 
-Order: the UI first, as presentational components driven by props. Then the API client core as its own task. Then one task per request, each adding its endpoint function, its MSW mock and the store slice, and wiring the UI to it.
+Order: one task per widget, each fully implemented (layer-panel INT-7): its UI, its requests and MSW mocks, its store slices, all loading, error and empty states, its race-condition and performance concerns, and its tests. The shared API client core and the dev MSW setup are built by the first task that needs them. Slice names follow Feature-Sliced Design (layer-panel INT-4).
 
 | # | Task | Covers | Depends on | Status |
 |---|---|---|---|---|
 | 1 | Map library selection: MapLibre GL JS chosen (INT-4) and installed | BR-12, TR-06 | none | done |
-| 2 | Dashboard layout: stubs and app shell; left are manual check, verify, build, acceptance, review | TR-61 | 1 | done |
-| 3 | Layer panel UI: layer list and on/off toggles from props, loading and error display per layer | BR-03, AR-01 | 2 | todo |
-| 4 | Timeline UI: time picker over a list of time points from props | BR-06 | 2 | todo |
-| 5 | Map UI: `MapView` adapter with a MapLibre instance created once, bundled GeoJSON background, fake adapter for tests | BR-01, TR-40, TR-41 | 2 | todo |
-| 6 | Chart UI: Recharts time-series chart from props, selected-time marker | BR-07, TR-50, TR-51, TR-53 | 2 | todo |
-| 7 | API client core: MSW set up for tests and dev; one request function with `AbortSignal` support, response validation against the contract types, and `ApiError` turned into a user-readable message. No endpoints yet | TR-05, TR-30, TR-31, TR-60 | 2 | todo |
-| 8 | Layers request: `GET /api/layers` mock with the 3 layers, latency and error codes, shared types, endpoint function on the client core, Vedro store (confirm the API first): layers, active layers, loading/error/success. Wires the layer panel and derives the timeline range | BR-02, BR-03, BR-09, BR-10, TR-05, TR-10, TR-20–22, TR-30, TR-33 | 3, 4, 7 | todo |
-| 9 | Snapshot request: `GET /api/layers/:layerId/snapshot` mock with hourly data 10:00–14:00 and `NO_DATA`; selected time in the store, per-layer loading/error, superseded responses discarded. Wires the timeline and the map with renderers for points, arrows and heatmap, updated in place, previous data kept while loading. Split by kind if the spec gets large | BR-04–06, BR-08, BR-11, TR-11, TR-23, TR-31, TR-34, TR-42, TR-43, TR-72 | 5, 8 | todo |
-| 10 | Series request: `GET /api/layers/:layerId/series` mock, endpoint function, series selector in the store. Wires the chart | BR-07, BR-08, TR-13, TR-50, TR-51 | 6, 8 | todo |
-| 11 | Failure injection: test-only switch that makes a chosen layer return `500` | TR-30, TR-82 | 9 | todo |
-| 12 | Sync and race-condition hardening: integration tests for rapid scrubbing and toggling, out-of-order responses, error states | BR-08, BR-11, TR-32, TR-82 | 9, 10, 11 | todo |
-| 13 | Performance pass: per-slice subscriptions, memoized series, no fetch for inactive layers, payload sizes | BR-32, TR-71–74 | 12 | todo |
-| 14 | README: the 8 required sections plus AI usage, assembled from the `## Decisions` entries | BR-41, TR-75, TR-83 | all | todo |
-
-Tasks 3–6 are independent and can be done in any order.
+| 2 | Dashboard layout: stubs and app shell; left are manual check, verify, build, acceptance, review | TR-60 | 1 | done |
+| 3 | Layer panel (previous tasks 3, 7 and 8, layer-panel INT-5) — widget `layer-panel`, entity `layer`, feature `toggle-layer`. Vedro store (INT-3) and FSD (INT-4) set up. Shared API client core: request function with `AbortSignal`, response validation against the contract types, `ApiError` turned into a user-readable message. MSW in every build; tests mock the request functions with `vi.mock` (SPEC-7). `GET /api/layers` mock with the 3 layers and 300–1500 ms latency. Layer slice: definitions, active ids, list request status; the shared timeline range derived from the layers' time points. Panel: list loading, error with retry and empty states (INT-2); toggles. Retry of a superseded list request discarded | BR-02, BR-03, BR-04, BR-09, BR-10, BR-11, AR-01, TR-03, TR-05, TR-10, TR-11, TR-20, TR-21, TR-22, TR-30, TR-31, TR-33, TR-60, TR-71, TR-82 | 2 | in progress |
+| 4 | Chart — widget `chart`, entities `series` and `time`, feature `select-time`. `GET /api/layers/:layerId/series` mock and request per active layer, series slice with per-layer status, selected time in the store, a click on the chart selects the time (dashboard INT-2), selected-time marker, series of a deactivated layer discarded, memoized series | BR-04, BR-06, BR-07, BR-08, BR-11, TR-12, TR-13, TR-31, TR-50–53, TR-71, TR-73, TR-82 | 3 | todo |
+| 5 | Map — widget `map`, entity `snapshot`. MapLibre adapter created once, bundled GeoJSON background, fake adapter for tests. `GET /api/layers/:layerId/snapshot` mock with hourly data 10:00–14:00 and `NO_DATA`, request per active layer at the selected time, superseded requests aborted, previous data kept while loading. Renderers for points, arrows and heatmap selected by `kind`, updated in place. Loading indicator above the map (dashboard INT-4); per-layer loading and error with retry in the layer panel (INT-1). Sync and race integration tests across panel, chart and map | BR-01, BR-04, BR-05, BR-08, BR-11, TR-23, TR-31, TR-32, TR-34, TR-40–43, TR-70, TR-72, TR-74, TR-82 | 3, 4 | todo |
+| 6 | README: the 8 required sections plus AI usage, assembled from the `## Decisions` entries | BR-41, TR-75, TR-83 | all | todo |
 
 ## Open points
 
 - The TRD cites BR-20 (chart click selects time), BR-21 (3D object) and BR-22 (hosting), which the BRD does not define. Out of scope: the user declined the optional extras.
-- The Vedro API is confirmed at the start of task 8.
+- The Vedro API is confirmed in task 3 (layer-panel plan).
+- There is no separate timeline widget: the chart is the time picker (dashboard-layout INT-2), so BR-06 is covered by task 4.
