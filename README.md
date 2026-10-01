@@ -38,7 +38,7 @@ Then I decided to make the layer switches work right away. For that, the active 
 
 After adding the store, a question came up: where should the feature-related state be stored? I chose Feature-Sliced Design to answer it. I often follow FSD, and I like its business-logic thinking: the code is split by business entities and user actions, so each piece of state has a clear place next to its logic.
 
-The decisions are recorded in `documents/design/layer-panel/` (INT-3 – INT-5, PLAN-5, PLAN-7, PLAN-12, PLAN-13).
+The decisions are recorded in `documents/design/layer-panel/` (INT-3 – INT-5, PLAN-5, PLAN-7, PLAN-12 – PLAN-14).
 
 ## Stack
  
