@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 import { act, render, renderHook, screen, waitFor } from '@testing-library/react'
-import { fetchLayers, useActiveLayerIds, useLayerList, useLayers, type LayerDefinition } from '@entities/layer'
+import { fetchLayers, useLayerList, useLayers, type LayerDefinition } from '@entities/layer'
 import { API_MESSAGES, ApiRequestError } from '@shared/api'
 import { AppStoreProvider, initialAppStoreState } from '@shared/store/appStore'
 import { deferred, type Deferred } from '@shared/test/deferred'
@@ -32,8 +32,7 @@ function renderLoader() {
     () => {
       const list = useLayerList()
       const layers = useLayers()
-      const activeLayerIds = useActiveLayerIds()
-      return { list, layers, activeLayerIds, retry: useLoadLayers() }
+      return { list, layers, retry: useLoadLayers() }
     },
     { wrapper },
   )
@@ -44,7 +43,7 @@ afterEach(() => {
 })
 
 describe('useLoadLayers', () => {
-  it('loads on mount: loading, then the layers with all of them active', async () => {
+  it('loads on mount: loading, then the loaded layers', async () => {
     const { responses } = queueResponses(1)
     const { result } = renderLoader()
 
@@ -60,7 +59,6 @@ describe('useLoadLayers', () => {
       expect(result.current.list).toEqual({ status: 'success' })
     })
     expect(result.current.layers).toEqual(TEST_LAYERS)
-    expect(result.current.activeLayerIds).toEqual(['temperature', 'wind', 'insolation'])
   })
 
   it('shows the request error message, and a retry then succeeds', async () => {
@@ -114,7 +112,6 @@ describe('useLoadLayers', () => {
     })
 
     expect(result.current.layers).toEqual(secondList)
-    expect(result.current.activeLayerIds).toEqual(['wind', 'insolation'])
   })
 
   it('shows the fixed message for an error that is not an ApiRequestError', async () => {

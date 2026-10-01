@@ -13,5 +13,6 @@ Non-negotiable:
 - Never push or open a PR unless the user commands it.
 - Commits: one-line subject, no body. Commits authored by Claude carry no Co-Authored-By trailer; commits under the user's identity end with it. Commit only when allowed.
 - Keep it simple (KISS, YAGNI): no over-engineering, no speculative hardening. Not every review finding gets fixed; fix what matters, accept the rest with a reason.
+- Tests cover only their own unit: mock child components as `data-testid` stubs and check they render; don't re-test what a dependency's own tests cover.
 - No code comments; rationale lives in design docs.
 - `npm run verify` before presenting an implementation.
