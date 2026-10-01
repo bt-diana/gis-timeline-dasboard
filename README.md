@@ -82,9 +82,12 @@ This runs the type check, lint, and tests together.
 
 ## Repository organization
 
-- src/app — app shell and top-level layout
-- src/features/header — dashboard header
-- src/features/layer — layer panel area
-- src/features/map — map region placeholder
-- src/features/chart — chart region placeholder
-- src/test — shared test setup
+- src/app — app shell, store provider and the dev-only QA control
+- src/widgets — layer-panel, header, map and chart
+- src/features — user actions: toggle-layer, load-layers
+- src/entities — business entities: layer (types, API call, state slice, selectors)
+- src/shared/api — request function and API errors
+- src/shared/store — the Vedro store
+- src/shared/mocks — MSW mocks for `npm run dev` only
+- src/shared/test — test setup and test data
+- documents — requirements, roadmap, design docs and reviews
