@@ -1,1 +1,2 @@
-export { Chart } from './ui/Chart'
+export { Chart, type ChartProps } from './ui/Chart'
+export { ConnectedChart } from './ui/ConnectedChart'

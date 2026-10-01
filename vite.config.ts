@@ -19,5 +19,6 @@ export default defineConfig({
     globals: true,
     setupFiles: ['./src/shared/test/setup.ts'],
     css: false,
+    env: { TZ: 'Asia/Bishkek' },
   },
 })

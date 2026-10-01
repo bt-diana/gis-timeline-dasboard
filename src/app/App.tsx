@@ -1,5 +1,5 @@
 import './App.css'
-import { Chart } from '@widgets/chart'
+import { ConnectedChart } from '@widgets/chart'
 import { Header } from '@widgets/header'
 import { ConnectedLayerPanel } from '@widgets/layer-panel'
 import { Map } from '@widgets/map'
@@ -15,7 +15,7 @@ export function App() {
         </div>
         <div className="workspace">
           <Map />
-          <Chart />
+          <ConnectedChart />
         </div>
       </div>
     </AppStoreProvider>
