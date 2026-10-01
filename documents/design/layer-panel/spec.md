@@ -25,7 +25,7 @@ revision: 4
 ### Store (INT-3, INT-5)
 
 10. The layer slice holds `layers: readonly LayerDefinition[]`, `activeLayerIds: readonly string[]` and the list request state: `idle`, `loading`, `error` with its message, or `success`.
-11. Loading the list sets `loading`, then `success` with the layers or `error` with the message. On success, active ids not in the list are dropped; when no known id is left, all layers become active (SPEC-8).
+11. Loading the list sets `loading`, then `success` with the layers or `error` with the message. On success, active ids not in the list are dropped; when no known id is left, all layers become active.
 12. Only the latest list request may write to the store: starting a new one aborts the pending one, and an aborted or superseded response is discarded (TR-31, BR-11).
 13. A selector derives the shared timeline range from the loaded layers: the sorted, de-duplicated union of their `timePoints`, with its first and last point; empty when there are no layers (TR-22).
 14. Toggling works as in revision 2: an inactive layer becomes active, an active one inactive.
@@ -129,15 +129,6 @@ revision: 4
 - **Trade-off accepted:** The guards are kept in step with `GIS_Timeline_API.md` by hand.
 - **AI involvement:** Proposed by Claude; accepted by the user.
 
-### SPEC-6 — The first layer is active after the list loads
-
-- **Status:** superseded by SPEC-8
-- **Decision:** After a successful load, the active ids still in the list are kept; if none is left, the first layer is active.
-- **Options considered:** No active layer; the first layer; all layers.
-- **Why:** The map is not empty on start, and a long list is not all fetched at once (TR-70, TR-72).
-- **Trade-off accepted:** Which layer shows first depends on the order the API returns.
-- **AI involvement:** Proposed by Claude; accepted by the user.
-
 ### SPEC-7 — MSW runs in every build; tests mock the request functions
 
 - **Status:** active
@@ -146,12 +137,3 @@ revision: 4
 - **Why:** There is no real backend (BR-02, BR-10). With MSW in dev only, `npm run build` with `npm run preview` and the Netlify demo had no API and showed only the error state.
 - **Trade-off accepted:** The production bundle includes MSW and its worker script, and the first load waits for the worker to register.
 - **AI involvement:** Claude had designed MSW as dev-only; the user found the built app not working and decided it must work with the build script as well.
-
-### SPEC-8 — All layers are active after the list loads
-
-- **Status:** active
-- **Decision:** After a successful load, the active ids still in the list are kept; if none is left (the first load), all layers are active.
-- **Options considered:** The first layer (SPEC-6); all layers.
-- **Why:** The user wants every layer shown by default.
-- **Trade-off accepted:** With many layers, the map and chart (tasks 4 and 5) request data for all of them on start (TR-70, TR-72); revisit if the layer count grows.
-- **AI involvement:** Decided by the user, replacing Claude's earlier proposal (SPEC-6).
