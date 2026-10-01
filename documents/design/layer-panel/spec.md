@@ -1,6 +1,6 @@
 ---
-status: approved
-revision: 3
+status: draft
+revision: 4
 ---
 
 # Spec — Layer Panel
@@ -17,10 +17,10 @@ revision: 3
 ### Layers request and mock (INT-5, previous task 8)
 
 5. `GET /api/layers` returns `LayerDefinition[]` (`id`, `name`, `kind`, `unit`, `timePoints`) through the request function.
-6. MSW serves it in dev only: the browser worker starts before the app renders when running `npm run dev`, and is not part of the production build or the tests (SPEC-3).
+6. MSW serves it in every build — `npm run dev`, `npm run build` with `npm run preview`, and the deployed demo: the browser worker starts before the app renders. There is no real backend, so the mock is the app's API (SPEC-7).
 7. The mock returns the three contract layers, each with hourly time points 10:00–14:00 UTC (the contract's first version), after a random 300–1500 ms delay (TR-33).
-8. In dev, requests succeed by default. A dev-only QA control on the page switches failure injection on and off; while on, `GET /api/layers` answers `500` with an `ApiError` body. The control is not rendered in the production build (SPEC-4).
-9. Tests do not use MSW: they replace the request functions with `vi.mock` and control each response, its timing and its failure directly (SPEC-3).
+8. Requests succeed by default. A dev-only QA control on the page switches failure injection on and off; while on, `GET /api/layers` answers `500` with an `ApiError` body. The control is not rendered in the production build (SPEC-4).
+9. Tests do not use MSW: they replace the request functions with `vi.mock` and control each response, its timing and its failure directly (SPEC-7).
 
 ### Store (INT-3, INT-5)
 
@@ -71,7 +71,8 @@ revision: 3
 - [ ] The request function returns a validated body; rejects with the `ApiError` message, the fixed message for malformed or non-`ApiError` failures, and as aborted when its signal aborts.
 - [ ] With the request function mocked by `vi.mock`, the app shows loading, then three switches with names, units and the first layer active.
 - [ ] When the mocked request fails, the panel shows the error message and Retry; when the next attempt succeeds, Retry shows the switches.
-- [ ] By hand in `npm run dev`: the list loads through MSW with visible latency; the QA control makes the next load fail and Retry recover after it is switched off. The production build contains neither MSW nor the QA control.
+- [ ] By hand in `npm run dev`: the list loads through MSW with visible latency; the QA control makes the next load fail and Retry recover after it is switched off.
+- [ ] By hand after `npm run build` and `npm run preview`: the list loads through MSW with visible latency; the QA control is not on the page.
 - [ ] An empty list shows the empty state.
 - [ ] Retry while pending, and a slow first response arriving after a fast second one, leave the store with the second result only.
 - [ ] Unmounting during a request writes nothing.
@@ -103,7 +104,7 @@ revision: 3
 
 ### SPEC-3 — MSW runs in dev only; tests mock the request functions
 
-- **Status:** active
+- **Status:** superseded by SPEC-7
 - **Decision:** MSW serves the API only in `npm run dev`. Tests replace the request functions with `vi.mock` and control responses, timing and failures directly.
 - **Options considered:** MSW in dev and tests (the draft); MSW in dev only with `vi.mock` in tests.
 - **Why:** The user prefers tests that mock the requests directly; they need no handler setup and control the order of responses exactly.
@@ -136,3 +137,12 @@ revision: 3
 - **Why:** The map is not empty on start, and a long list is not all fetched at once (TR-70, TR-72).
 - **Trade-off accepted:** Which layer shows first depends on the order the API returns.
 - **AI involvement:** Proposed by Claude; accepted by the user.
+
+### SPEC-7 — MSW runs in every build; tests mock the request functions
+
+- **Status:** active
+- **Decision:** MSW serves the API in dev, in the production build and in the deployed demo. Tests still replace the request functions with `vi.mock`. Only the QA control stays dev-only (SPEC-4).
+- **Options considered:** MSW in dev only (SPEC-3); MSW in every build with the QA control dev-only; MSW and the QA control in every build.
+- **Why:** There is no real backend (BR-02, BR-10). With MSW in dev only, `npm run build` with `npm run preview` and the Netlify demo had no API and showed only the error state.
+- **Trade-off accepted:** The production bundle includes MSW and its worker script, and the first load waits for the worker to register.
+- **AI involvement:** Claude had designed MSW as dev-only; the user found the built app not working and decided it must work with the build script as well.
