@@ -2,7 +2,7 @@ import './App.css'
 import { ConnectedChart } from '@widgets/chart'
 import { Header } from '@widgets/header'
 import { ConnectedLayerPanel } from '@widgets/layer-panel'
-import { Map } from '@widgets/map'
+import { ConnectedMap } from '@widgets/map'
 import { AppStoreProvider, initialAppStoreState } from '@shared/store/appStore'
 
 export function App() {
@@ -14,7 +14,7 @@ export function App() {
           <ConnectedLayerPanel />
         </div>
         <div className="workspace">
-          <Map />
+          <ConnectedMap />
           <ConnectedChart />
         </div>
       </div>

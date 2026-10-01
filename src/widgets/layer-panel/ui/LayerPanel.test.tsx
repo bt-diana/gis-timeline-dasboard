@@ -7,16 +7,19 @@ import { LayerPanel, type LayerPanelProps } from './LayerPanel'
 function renderPanel(props: Partial<LayerPanelProps> = {}) {
   const onToggleLayer = vi.fn<(layerId: string) => void>()
   const onRetry = vi.fn<() => void>()
+  const onRetryLayer = vi.fn<(layerId: string) => void>()
   const allProps: LayerPanelProps = {
     layers: TEST_LAYERS,
     activeLayerIds: ['wind'],
     list: { status: 'success' },
+    snapshots: {},
     onToggleLayer,
     onRetry,
+    onRetryLayer,
     ...props,
   }
   const view = render(<LayerPanel {...allProps} />)
-  return { ...view, onToggleLayer, onRetry, allProps }
+  return { ...view, onToggleLayer, onRetry, onRetryLayer, allProps }
 }
 
 function checkedStates() {
@@ -24,6 +27,13 @@ function checkedStates() {
 }
 
 const panel = () => screen.getByRole('complementary', { name: 'Layers' })
+const T10 = '2026-01-01T10:00:00Z'
+
+function rowOf(name: string) {
+  const row = screen.getByRole('switch', { name }).closest('li')
+  if (!row) throw new Error(`No row for ${name}`)
+  return row
+}
 
 describe('LayerPanel', () => {
   it('renders the Layers landmark on its own', () => {
@@ -108,6 +118,41 @@ describe('LayerPanel', () => {
 
     expect(onToggleLayer).toHaveBeenCalledTimes(1)
     expect(onToggleLayer).toHaveBeenCalledWith('temperature')
+  })
+
+  it.each([
+    ['loading', { status: 'loading', time: T10, features: null }],
+    ['waiting for a retry', { status: 'stale', time: T10 }],
+  ] as const)('shows a quiet busy row state while a layer is %s', (_, snapshot) => {
+    renderPanel({ snapshots: { wind: snapshot } })
+
+    const row = rowOf('Wind')
+    expect(row).toHaveAttribute('aria-busy', 'true')
+    expect(within(row).queryByRole('alert')).toBeNull()
+    expect(rowOf('Temperature')).toHaveAttribute('aria-busy', 'false')
+  })
+
+  it('shows a layer error in its row with a Retry that calls onRetryLayer with the id', async () => {
+    const user = userEvent.setup()
+    const { onRetryLayer, onRetry } = renderPanel({
+      snapshots: { wind: { status: 'error', time: T10, message: 'No data for this layer at the selected time.' } },
+    })
+
+    expect(within(rowOf('Wind')).getByRole('alert')).toHaveTextContent('No data for this layer at the selected time.')
+    expect(within(rowOf('Temperature')).queryByRole('alert')).toBeNull()
+
+    await user.click(screen.getByRole('button', { name: 'Retry Wind' }))
+
+    expect(onRetryLayer).toHaveBeenCalledTimes(1)
+    expect(onRetryLayer).toHaveBeenCalledWith('wind')
+    expect(onRetry).not.toHaveBeenCalled()
+  })
+
+  it('shows nothing extra for a loaded layer', () => {
+    renderPanel({ snapshots: { wind: { status: 'success', time: T10, features: { type: 'FeatureCollection', features: [] } } } })
+
+    expect(rowOf('Wind')).toHaveAttribute('aria-busy', 'false')
+    expect(within(rowOf('Wind')).queryByRole('alert')).toBeNull()
   })
 
   it('keeps aria-checked until the props change', async () => {

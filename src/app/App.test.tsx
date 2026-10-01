@@ -3,7 +3,7 @@ import { App } from './App'
 
 vi.mock('@widgets/header', () => ({ Header: () => <div data-testid="header" /> }))
 vi.mock('@widgets/layer-panel', () => ({ ConnectedLayerPanel: () => <div data-testid="layer-panel" /> }))
-vi.mock('@widgets/map', () => ({ Map: () => <div data-testid="map" /> }))
+vi.mock('@widgets/map', () => ({ ConnectedMap: () => <div data-testid="map" /> }))
 vi.mock('@widgets/chart', () => ({ ConnectedChart: () => <div data-testid="chart" /> }))
 
 describe('App', () => {

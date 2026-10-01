@@ -4,4 +4,5 @@ export const LAYER_PANEL_CONFIG = {
   loading: 'Loading layers…',
   empty: 'No layers available',
   retry: 'Retry',
+  retryLayer: (name: string) => `Retry ${name}`,
 } as const
