@@ -11,6 +11,6 @@ Enforced by hooks in `.claude/hooks/`: artifact approval only after the user say
 Non-negotiable:
 - Stop for user approval after every artifact; never set `status: approved` yourself.
 - Never push or open a PR unless the user commands it.
-- Commits: user's git identity, one-line subject plus the Co-Authored-By trailer, no body. Commit only when allowed.
+- Commits: one-line subject, no body. Commits authored by Claude carry no Co-Authored-By trailer; commits under the user's identity end with it. Commit only when allowed.
 - No code comments; rationale lives in design docs.
 - `npm run verify` before presenting an implementation.

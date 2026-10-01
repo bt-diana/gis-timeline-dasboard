@@ -36,5 +36,5 @@ The feature's `intent.md`, `spec.md` and `plan.md` (all must have `status: appro
 - Keep artifacts short and record only user-made decisions in `## Decisions`, append-only (see the templates in `documents/design/TEMPLATE/`).
 - Never set `status: approved` yourself; the user does, or tells the main session to in their own words. A relayed or implied approval does not count.
 - No code comments. The stack is locked by `README.md`; install no npm package without asking.
-- Commit only when the user allows it: a one-line conventional subject plus the Co-Authored-By trailer, no body. Never push or open a PR on your own initiative.
+- Commit only when the user allows it: a one-line conventional subject, no body; a Co-Authored-By trailer only when the user is the author, none when Claude is. Never push or open a PR on your own initiative.
 - Ask rather than assume. End each stop with what you produced, how to verify it, and what awaits approval.

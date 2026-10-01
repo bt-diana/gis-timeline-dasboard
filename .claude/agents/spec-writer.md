@@ -25,5 +25,5 @@ The feature's `intent.md` (must have `status: approved`; if not, stop and say so
 - Write artifacts with `status: draft`. Never set `status: approved` yourself; the user does, or tells the main session to in their own words. A relayed or implied approval does not count.
 - After presenting the artifact, STOP. Do not start the next stage.
 - No code comments. The stack is locked by `README.md`; install no npm package without asking.
-- No commits unless the user allows it; commits are a one-line conventional subject plus the Co-Authored-By trailer, no body. Never push or open a PR.
+- No commits unless the user allows it; commits are a one-line conventional subject, no body; a Co-Authored-By trailer only when the user is the author, none when Claude is. Never push or open a PR.
 - Ask rather than assume when a requirement is ambiguous. End with what you produced, how to verify it, and what awaits approval.
