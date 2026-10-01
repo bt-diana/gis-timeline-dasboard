@@ -51,7 +51,6 @@ src/
 | `src/app/App.tsx` | modified: renders `ConnectedChart` |
 | `src/app/App.test.tsx` | modified: the chart stub mocks `ConnectedChart` |
 | `src/shared/store/appStore.ts` | modified: `series: initialSeriesState`, `time: initialTimeState` |
-| `src/shared/mocks/data/layers.ts` | modified: exports `HOURLY_TIME_POINTS` |
 | `src/shared/mocks/data/series.ts` | new: `MOCK_SERIES` keyed by mock layer id, one value per hourly point (data only, as PLAN-12) |
 | `src/shared/mocks/handlers/series.ts` | new: `GET /api/layers/:layerId/series` after `randomLatency()`; unknown id → 404 `NOT_FOUND` `ApiError` with message from a mock `as const` |
 | `src/shared/mocks/handlers/index.ts` | modified: adds series handlers |
@@ -118,6 +117,34 @@ Claude's choices, kept as written; the user approved the plan without changing t
 2. Initial time is set from `ConnectedChart` via `useInitialSelectedTime`; the map (task 5) relies on the chart being mounted.
 3. `Chart` tests mock `recharts` with stubs (CLAUDE.md rule) rather than rendering real SVG in jsdom.
 4. Copy: heading "Chart", loading "Loading series: Temperature, Wind…", empty "Turn on a layer to see its series", "Retry". Palette colours chosen at build time from the app's tokens, readable in light and dark.
+
+## Verification
+
+Written by the `reviewer` agent after the user accepts the implementation; the push gate reads it. The user approves it by setting the Status below, only after reading the findings and resolutions.
+
+- **Reviewed commit:** `9f388ab83992fff16d37c0fc6b610a8e113da7b6`
+- **Status:** draft
+
+### Checks
+
+- [x] `npm run verify`: typecheck, lint and 123 tests in 22 files pass.
+- [x] `npm run build`: passes. The main chunk grows from 236 kB (73 kB gzip) on `main` to 591 kB (176 kB gzip) because of Recharts, and Vite now warns about chunks over 500 kB (PERF-1). No API keys or secrets in `dist/` (the only grep hit is MSW's domain-name list). `npm audit --omit=dev`: 0 vulnerabilities.
+- Re-review after the CQ-1 and CQ-4 fixes skipped at the user's request; `npm run verify` passes on the fix commit.
+- [ ] By hand in `npm run dev` and `npm run preview` (lines appear with latency, tooltip shows real values with units, a click moves the marker, toggles reuse loaded series): not run by the reviewer (no browser in the review session). This also confirms that Recharts 3's `activeLabel` gives the clicked time, which unit tests can only stub.
+
+### Findings
+
+One row per finding from the Security, Code Quality & Maintainability, Test Coverage & Correctness and Performance & Efficiency lenses, or "No findings." per lens.
+
+| ID | Lens | Severity | Finding | Resolution | AI involvement |
+|---|---|---|---|---|---|
+| SEC-1 | Security | — | No findings. Data reaches the DOM only as React text (no `dangerouslySetInnerHTML`; error messages and values come from the API), `layerId` is URI-encoded, responses go through `isLayerSeries`, tooltip colours come from the `as const` palette, and the bundle has no keys. | — | — |
+| CQ-1 | Code Quality / Test Coverage | minor | `src/widgets/chart/model/buildChartData.ts:56`: `normaliseSeries` runs on all of a series' points, so a value outside the range is hidden from the plot but still sets the line's min/max. That breaks the spec edge case "series value for a time outside the range: ignored". The `buildChartData` test mocks `normaliseSeries`, so it can't catch this. Fix: filter `entry.points` to the range points before `normaliseSeries`, and add an assertion that the in-range scaling is unchanged. | Fixed: out-of-range points are filtered before `normaliseSeries`; the test asserts the scaling input. | Found by Claude (reviewer); fix by Claude, chosen by the user. |
+| CQ-2 | Code Quality | minor | `documents/design/chart/plan.md` "Claude's choices": four non-obvious choices sit outside `## Decisions`. One of them, the spec 4 trigger (request only on activation, mount and Retry), departs from the literal spec. Unlike the layer-panel plan, they have no Decision record. Fix: move choices 1 and 2 into `## Decisions` as PLAN-3 and PLAN-4 (docs only). | Accepted: `## Decisions` holds only user-made decisions; the user declined recording build choices. | Found by Claude (reviewer); accepted by the user. |
+| CQ-3 | Code Quality | minor | `src/widgets/chart/ui/Chart.tsx:79`: `aria-busy` is on the whole Chart region, but spec 20 says "the plot area". While loading there is often no plot to mark, so the region is the workable reading. Suggest: accept as is, and record it with CQ-2. | Accepted: while loading there is usually no plot to mark, so the region carries `aria-busy`. | Found by Claude (reviewer); accepted by the user. |
+| CQ-4 | Code Quality | minor | `src/shared/mocks/data/layers.ts:1`: `HOURLY_TIME_POINTS` is now exported as the plan said, but nothing imports it, and `src/shared/mocks/data/series.ts` repeats the time literals. Fix: drop the `export` and the plan's file-map row, or accept as is. | Fixed: `export` dropped and the plan's file-map row removed. | Found by Claude (reviewer); fix by Claude, chosen by the user. |
+| TC-1 | Test Coverage | minor | `src/features/select-time/model/useSelectTime.ts`: has no test file of its own. It is only used for real inside `useInitialSelectedTime.test.tsx`. The range check lives in the tested `selectTime` slice function, and `useToggleLayer` follows the same no-test pattern. Suggest: accept as is. | Accepted: thin wrapper over the tested `selectTime`; the user agreed it needs no own test. | Found by Claude (reviewer); accepted by the user. |
+| PERF-1 | Performance | minor | Build: Recharts more than doubles the main chunk (73 kB to 176 kB gzip), and Vite warns about the 500 kB limit. TR-50 requires Recharts, and the dashboard needs the chart on first paint. Suggest: accept as is; code-splitting is YAGNI here. Re-renders are fine: chart data is memoized on its four inputs, a time click only re-renders the chart, and stale responses are aborted. | Accepted: TR-50 requires Recharts and the chart is on first paint; code-splitting is YAGNI. | Found by Claude (reviewer); accepted by the user. |
 
 ## Decisions
 
