@@ -25,6 +25,7 @@
 
 .layer-panel__row {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 8px;
   min-width: 0;
@@ -77,4 +78,23 @@
   color: var(--text);
   cursor: pointer;
   padding: 4px 12px;
+}
+
+.layer-panel__row[aria-busy='true'] .layer-panel__switch {
+  animation: layer-panel-busy 1s ease-in-out infinite alternate;
+}
+
+@keyframes layer-panel-busy {
+  to {
+    opacity: 0.55;
+  }
+}
+
+.layer-panel__layer-error {
+  display: flex;
+  flex-basis: 100%;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 0.825rem;
 }
