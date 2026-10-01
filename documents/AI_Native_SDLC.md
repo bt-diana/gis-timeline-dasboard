@@ -101,7 +101,7 @@ Then refresh `README.md` (features checklist, architecture, scripts, stack, and 
 Claude Code `PreToolUse` hooks (`.claude/settings.json`, scripts in `.claude/hooks/`):
 
 - **`review-gate.js`** — blocks `git push` unless `documents/reviews/<branch-slug>.md` exists, its `commit:` matches `HEAD`, and it has `status: approved`.
-- **`approval-gate.js`** — on Write and Edit: blocks setting `status: approved` in a design or review artifact unless the user's last message approved it (token written by `approval-record.js` on `UserPromptSubmit`). On Bash it records every artifact's status before the command; the `PostToolUse` hook **`approval-bash-check.js`** compares them after it and puts back any status that became `approved` without the user's approval (layer-panel PLAN-9).
+- **`approval-gate.js`** — on Write and Edit: blocks setting `status: approved` in a design or review artifact unless the user's last message approved it (token written by `approval-record.js` on `UserPromptSubmit`). On Bash it records every artifact's status before the command; the `PostToolUse` hook **`approval-bash-check.js`** compares them after it and puts back any status that became `approved` without the user's approval.
 
 There is no commit gate: anything may be committed, drafts included. `review-gate.js` accepts a deliberate bypass: prefix the command with `SDLC_SKIP_GATE=1`. It exists so a misfiring gate doesn't block real work, not as a routine escape; if you reach for it often, fix the gate.
 

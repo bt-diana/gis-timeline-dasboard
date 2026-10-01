@@ -108,7 +108,7 @@ Every acceptance criterion in `spec.md` maps to a test. jsdom does not apply lay
 
 ### PLAN-3 — The design gate is extended to cover the stub folders
 
-- **Status:** superseded by layer-panel PLAN-8 (the stubs moved to `src/widgets/`; the gate maps FSD slices)
+- **Status:** superseded (the stubs moved to `src/widgets/`; the design gate was removed in the layer-panel task)
 - **Decision:** `design-gate.js` is extended so commits touching `src/features/header/`, `layer/`, `map/` and `chart/` are checked against `documents/design/dashboard-layout/` instead of a same-named design folder. The four folders are not nested under `src/features/dashboard-layout/`.
 - **Options considered:** Nest the four folders under `src/features/dashboard-layout/`; extend the gate; bypass with `SDLC_SKIP_GATE=1`.
 - **Why:** The user wants the feature folders kept as planned, matching TRD §7 and TR-61, and the gate adapted to them.
