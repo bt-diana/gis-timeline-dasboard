@@ -88,6 +88,8 @@ status: draft
 ---
 ```
 
+Review files are local working files, not tracked in git (`.gitignore` keeps only `TEMPLATE.md`); the push gate reads them from the working tree, so committing never moves `HEAD` away from the reviewed commit.
+
 After the reviewer writes it, the agent walks the user through findings and proposes a resolution for each (fixed / deferred / accepted, with rationale). Fixes are applied only as the user approves; then the user approves the review file (`status: approved`). Re-run the reviewer and update `commit:` whenever new commits land after the last review — the push gate checks this.
 
 Then refresh `README.md` (features checklist, architecture, scripts, stack, and the trade-offs / AI-usage sections assembled from the approved Decisions entries) against what the feature actually shipped — or state explicitly that nothing changed. **Get approval**, commit on the feature branch, and only then push. When the user commands a push, the agent also opens the PR against `main` and writes its description (intent, key decisions, test coverage, review findings and resolutions, what to verify by hand). Commits authored by Claude carry no `Co-Authored-By` trailer; commits under the user's git identity name Claude as co-author through that trailer. Never push or open a PR unprompted. Merging the PR remains a human action.
